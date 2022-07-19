@@ -61,13 +61,12 @@ public class MainActivity extends ProgressActivity {
     private List<Meme> mMemes;
     static final int REQUEST_PERMISSION_KEY = 1;
     SearchView searchView;
-    static View parent2;
-    private AlbumAdapter adapter;
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,7 +76,6 @@ public class MainActivity extends ProgressActivity {
         context = getApplicationContext();
         resultsList = findViewById(R.id.resultsList);
         mMemeLab = MemeLab.get(MainActivity.this);
-//        parent2 = (View) (findViewById(R.id.thumb_pic)).getParent();
 
         String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
         if(!Function.hasPermissions(this, PERMISSIONS)){
