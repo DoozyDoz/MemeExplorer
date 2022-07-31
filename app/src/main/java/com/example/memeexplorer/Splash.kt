@@ -46,7 +46,7 @@ class Splash : AppCompatActivity() {
 
     private fun startProgressBar() {
         var progress = progress_bar!!.progress
-        progress = progress + 2
+        progress += 2
         if (progress > progress_bar!!.max) progress = 0
         progress_bar!!.progress = progress
         Handler().postDelayed({ startProgressBar() }, 50)

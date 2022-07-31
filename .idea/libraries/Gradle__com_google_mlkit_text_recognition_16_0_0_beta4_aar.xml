@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: com.google.mlkit:text-recognition:16.0.0-beta4@aar">
     <CLASSES>
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/9051a874caade39551479abdd2f966e9/text-recognition-16.0.0-beta4/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/9051a874caade39551479abdd2f966e9/text-recognition-16.0.0-beta4/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/9051a874caade39551479abdd2f966e9/text-recognition-16.0.0-beta4/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/9854f755b3e6fe0f2ca7e6b4b8c808b0/transformed/jetified-text-recognition-16.0.0-beta4/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9854f755b3e6fe0f2ca7e6b4b8c808b0/transformed/jetified-text-recognition-16.0.0-beta4/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9854f755b3e6fe0f2ca7e6b4b8c808b0/transformed/jetified-text-recognition-16.0.0-beta4/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.mlkit/text-recognition/16.0.0-beta4/ace98f39b262c59be4be4d52b871d1ba5dfff723/text-recognition-16.0.0-beta4-javadoc.jar!/" />
