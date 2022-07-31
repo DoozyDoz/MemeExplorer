@@ -39,7 +39,7 @@ import com.example.memeexplorer.memeClasses.MemeLab;
 import com.example.memeexplorer.utilities.ArrayListSaverInterface;
 import com.example.memeexplorer.utilities.Constants;
 import com.example.memeexplorer.utilities.Function;
-import com.example.memeexplorer.utilities.TranslatorService;
+import com.example.memeexplorer.utilities.TranslatorJob;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
@@ -53,19 +53,19 @@ import java.util.List;
 import butterknife.ButterKnife;
 
 public class MainActivity extends ProgressActivity {
-    public ArrayList<String> pathsArray = new ArrayList<String>();
-    static GridView resultsList;
-    private static TextRecognizer mTextRecognizer;
-    private Context context;
-    private static MemeLab mMemeLab;
-    private List<Meme> mMemes;
-    static final int REQUEST_PERMISSION_KEY = 1;
+    public         ArrayList<String> pathsArray             = new ArrayList<>();
+    static         GridView          resultsList;
+    private static TextRecognizer    mTextRecognizer;
+    private        Context           context;
+    private static MemeLab           mMemeLab;
+    private        List<Meme>        mMemes;
+    static final   int               REQUEST_PERMISSION_KEY = 1;
     SearchView searchView;
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,31 +73,31 @@ public class MainActivity extends ProgressActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        context = getApplicationContext();
+        context     = getApplicationContext();
         resultsList = findViewById(R.id.resultsList);
-        mMemeLab = MemeLab.get(MainActivity.this);
+        mMemeLab    = MemeLab.get(MainActivity.this);
 
         String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-        if(!Function.hasPermissions(this, PERMISSIONS)){
+        if (!Function.hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_PERMISSION_KEY);
-        }else {
+        } else {
             mTextRecognizer = new TextRecognizer.Builder(context).build();
             mTextRecognizer.setProcessor(new OcrDetectorProcessor());
             if (!mTextRecognizer.isOperational()) {
-                startActivity(new Intent(MainActivity.this,loadingActivity.class));
+                startActivity(new Intent(MainActivity.this, loadingActivity.class));
             }
         }
-        Intent i = TranslatorService.newIntent(context);
+        Intent i = TranslatorJob.Companion.newIntent(context);
         i.putExtra("receiver", new DownReceiver(new Handler()));
         context.startService(i);
 
         pathsArray = new ArrayListSaverInterface(context).getPathsArray();
 
 
-        int iDisplayWidth = getResources().getDisplayMetrics().widthPixels;
-        Resources resources = getApplicationContext().getResources();
-        DisplayMetrics metrics = resources.getDisplayMetrics();
-        float dp = iDisplayWidth / (metrics.densityDpi / 160f);
+        int            iDisplayWidth = getResources().getDisplayMetrics().widthPixels;
+        Resources      resources     = getApplicationContext().getResources();
+        DisplayMetrics metrics       = resources.getDisplayMetrics();
+        float          dp            = iDisplayWidth / (metrics.densityDpi / 160f);
         if (dp < 360) {
             dp = (dp - 17) / 2;
             float px = Function.convertDpToPixel(dp, getApplicationContext());
@@ -105,27 +105,29 @@ public class MainActivity extends ProgressActivity {
         }
 
     }
+
     @Override
     protected void onResume() {
         String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE};
-        if(!Function.hasPermissions(this, PERMISSIONS)){
+        if (!Function.hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, REQUEST_PERMISSION_KEY);
-        }else {
+        } else {
             mTextRecognizer = new TextRecognizer.Builder(context).build();
             mTextRecognizer.setProcessor(new OcrDetectorProcessor());
             if (!mTextRecognizer.isOperational()) {
-                startActivity(new Intent(MainActivity.this,loadingActivity.class));
+                startActivity(new Intent(MainActivity.this, loadingActivity.class));
             }
         }
-        Intent i = TranslatorService.newIntent(context);
+        Intent i = TranslatorJob.Companion.newIntent(context);
         i.putExtra("receiver", new DownReceiver(new Handler()));
         context.startService(i);
         super.onResume();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.search_menu,menu);
+        menuInflater.inflate(R.menu.search_menu, menu);
         MenuItem myActionMenuItem = menu.findItem(R.id.menu_item_search);
         searchView = (SearchView) myActionMenuItem.getActionView();
         SearchView.OnQueryTextListener listener = new SearchView.OnQueryTextListener() {
@@ -135,9 +137,10 @@ public class MainActivity extends ProgressActivity {
                 matchingPics.execute();
                 return true;
             }
+
             public boolean onQueryTextSubmit(String query) {
                 Log.e("queryTextSubmit", query);
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                 return true;
             }
@@ -145,12 +148,15 @@ public class MainActivity extends ProgressActivity {
         searchView.setOnQueryTextListener(listener);
         return true;
     }
-    class GetMatchingPics extends AsyncTask<String,String,ArrayList<String>>{
+
+    class GetMatchingPics extends AsyncTask<String, String, ArrayList<String>> {
         String query;
+
         public GetMatchingPics(String p) {
             super();
             query = p;
         }
+
         @Override
         protected void onPostExecute(ArrayList<String> newPaths) {
             AlbumAdapter adapter = new AlbumAdapter(MainActivity.this, newPaths);
@@ -159,7 +165,7 @@ public class MainActivity extends ProgressActivity {
                 Intent intent = new Intent(MainActivity.this, SingleImageActivity.class);
                 // Log.i("drgg", "onItemClick: "+newPaths.size());
                 intent.putStringArrayListExtra("paths", newPaths);
-                intent.putExtra("position",i);
+                intent.putExtra("position", i);
                 startActivity(intent);
             });
         }
@@ -167,13 +173,13 @@ public class MainActivity extends ProgressActivity {
         @Override
         protected ArrayList<String> doInBackground(String... strings) {
 
-            Log.e("queryText",query);
+            Log.e("queryText", query);
             ArrayList<String> newPaths = new ArrayList<>();
             if (!query.isEmpty()) {
                 mMemes = mMemeLab.getMemes(query);
                 String tc = "";
                 for (int m = 0; m < mMemes.size(); m++) {
-                    Log.e("was called ", m+" ");
+                    Log.e("was called ", m + " ");
                     newPaths.add(mMemes.get(m).getLocation());
                     tc += mMemes.get(m).getLocation() + "\n";
                 }
@@ -181,11 +187,12 @@ public class MainActivity extends ProgressActivity {
             return newPaths;
         }
     }
+
     public static void detectText(Context context, Frame frame, String location) {
         mTextRecognizer = new TextRecognizer.Builder(context).build();
         mTextRecognizer.setProcessor(new OcrDetectorProcessor());
         SparseArray<TextBlock> items = mTextRecognizer.detect(frame);
-        String s = "";
+        String                 s     = "";
         for (int i = 0; i < items.size(); ++i) {
             TextBlock item = items.valueAt(i);
             if (item != null && item.getValue() != null) {
@@ -196,11 +203,13 @@ public class MainActivity extends ProgressActivity {
         Log.i("textss :", s);
         saveInDb(location, s);
     }
+
     private static void saveInDb(String location, String tag) {
         Meme m = new Meme(location, tag);
         mMemeLab.addMeme(m);
     }
-    public static Bitmap convertPathToBitmap(String filepath){
+
+    public static Bitmap convertPathToBitmap(String filepath) {
 //            File image = new File(filepath);
 //            View parent = (View) resultsList.getParent();
 //
@@ -230,10 +239,12 @@ public class MainActivity extends ProgressActivity {
 //         BitmapFactory.Options options = new BitmapFactory.Options();
 //        options.inSampleSize = 4;
 //        return BitmapFactory.decodeFile(filepath, options);
-return null;
+        return null;
     }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case 1: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -241,17 +252,16 @@ return null;
                     mTextRecognizer = new TextRecognizer.Builder(context).build();
                     mTextRecognizer.setProcessor(new OcrDetectorProcessor());
                     if (!mTextRecognizer.isOperational()) {
-                        startActivity(new Intent(MainActivity.this,loadingActivity.class));
+                        startActivity(new Intent(MainActivity.this, loadingActivity.class));
                     }
 //                    getPathsArray();
                 } else {
                     Toast.makeText(MainActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
                 }
             }
-           
-
         }
     }
+
     public String getBytesFromBitmap(Bitmap bitmap) {
         String str = "";
         try {
@@ -265,30 +275,36 @@ return null;
         }
         return str;
     }
+
     class AlbumAdapter extends BaseAdapter {
-        private Activity activity;
+        private Activity        activity;
         private ArrayList<Meme> data = new ArrayList<>();
+
         public AlbumAdapter(Activity a, ArrayList<String> d) {
             activity = a;
-            for (int k = 0;k<d.size();k++){
+            for (int k = 0; k < d.size(); k++) {
                 Meme meme = mMemeLab.get(context).getMeme(d.get(k));
                 data.add(meme);
             }
         }
+
         public int getCount() {
             return data.size();
         }
+
         public Object getItem(int position) {
             return data.get(position);
         }
+
         public long getItemId(int position) {
             return position;
         }
+
         public View getView(int position, View convertView, ViewGroup parent) {
             AlbumViewHolder holder = null;
             if (convertView == null) {
-                holder = new AlbumViewHolder();
-                convertView = LayoutInflater.from(activity).inflate(R.layout.thumb, parent, false);
+                holder              = new AlbumViewHolder();
+                convertView         = LayoutInflater.from(activity).inflate(R.layout.thumb, parent, false);
                 holder.galleryImage = convertView.findViewById(R.id.thumb_pic);
                 convertView.setTag(holder);
             } else {
@@ -307,11 +323,14 @@ return null;
                 Log.e("was called ", "failed");
             }
             return convertView;
-        }}
+        }
+    }
+
     class AlbumViewHolder {
         ImageView galleryImage;
 
     }
+
     @SuppressLint("RestrictedApi")
     private class DownReceiver extends ResultReceiver {
         public DownReceiver(Handler handler) {
@@ -323,9 +342,9 @@ return null;
             super.onReceiveResult(resultCode, resultData);
             if (resultCode == Constants.NEW_PROGRESS) {
                 int progress = resultData.getInt("progress");
-                if (progress == 100){
+                if (progress == 100) {
                     getProgressBar().setVisibility(View.GONE);
-                }else {
+                } else {
                     getProgressBar().setProgress(progress);
                 }
             }

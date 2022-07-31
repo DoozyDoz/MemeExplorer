@@ -1,4 +1,4 @@
-package com.example.memeexplorer
+package com.example.memeexplorer.activities
 
 import android.Manifest
 import android.app.ActivityManager
@@ -13,7 +13,7 @@ import android.widget.ProgressBar
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.example.memeexplorer.activities.DebugActivity
+import com.example.memeexplorer.R
 import java.util.*
 
 class Splash : AppCompatActivity() {
