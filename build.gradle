@@ -4,7 +4,14 @@ buildscript {
     def versions = [:]
 
     ext {
-        kotlinVersion = '1.7.0'
+        kotlin_version = '1.6.21'
+        timber_version = '5.0.1'
+        hilt_version = '2.42'
+
+        rxjava_version = '2.2.21'
+        rxkotlin_version = '2.4.0'
+        rxandroid_version = '2.1.1'
+
     }
 
 
@@ -21,8 +28,9 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.2.1'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        //annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

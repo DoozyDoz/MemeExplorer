@@ -1,7 +1,6 @@
 package com.example.memeexplorer.activities
 
 import android.annotation.SuppressLint
-import android.content.ClipData.newIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -22,7 +21,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.memeexplorer.R
-import com.example.memeexplorer.adapter.AdapterGridBasic
+import com.example.memeexplorer.common.presentation.AdapterGridBasic
 import com.example.memeexplorer.helpers.OcrDetectorProcessor
 import com.example.memeexplorer.memeClasses.Meme
 import com.example.memeexplorer.memeClasses.MemeLab
@@ -79,7 +78,6 @@ class DebugActivity : AppCompatActivity() {
         val m = Meme(location, tag)
         mMemeLab!!.addMeme(m)
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

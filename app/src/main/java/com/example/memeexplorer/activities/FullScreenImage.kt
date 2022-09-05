@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import com.example.memeexplorer.R
-import com.example.memeexplorer.adapter.AdapterFullScreenImage
 import com.example.memeexplorer.utilities.AdController
 import com.example.memeexplorer.utilities.Tools
 import java.io.File

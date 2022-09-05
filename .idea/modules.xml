@@ -7,6 +7,10 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MemeExplorer.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MemeExplorer.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MemeExplorer.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MemeExplorer.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/MemeExplorer.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/MemeExplorer.app.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.iml" filepath="$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.main.iml" filepath="$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/logging/MemeExplorer.logging.unitTest.iml" />
     </modules>
   </component>
 </project>

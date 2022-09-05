@@ -1,4 +1,4 @@
-package com.example.memeexplorer.adapter;
+package com.example.memeexplorer.common.presentation;
 
 import android.app.Activity;
 import android.content.Context;
