@@ -1,9 +1,9 @@
 package com.example.memeexplorer.common.domain.repositories
 
-import android.app.appsearch.SearchResults
 import com.example.memeexplorer.common.domain.model.meme.Meme
 import com.example.memeexplorer.common.domain.model.pagination.PaginatedMemes
 import com.example.memeexplorer.search.domain.model.SearchParameters
+import com.example.memeexplorer.search.domain.model.SearchResults
 import io.reactivex.Flowable
 
 interface MemeRepository {

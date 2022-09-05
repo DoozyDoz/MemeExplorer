@@ -5,5 +5,5 @@ import java.util.*
 data class Meme(
     val mId: UUID,
     val mLocation: String,
-    val mTag: String
+    val mTag: String = "NO_TAG",
 )

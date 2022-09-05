@@ -4,8 +4,9 @@
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/9854f755b3e6fe0f2ca7e6b4b8c808b0/transformed/jetified-text-recognition-16.0.0-beta4/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/583a03edcad7de4503107960341e16b4/transformed/jetified-text-recognition-16.0.0-beta4/res" />
       <root url="file://$USER_HOME$/.gradle/caches/transforms-3/50bb5e14a2d59187da2cc539059a9851/transformed/jetified-text-recognition-16.0.0-beta4/res" />
-      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/50bb5e14a2d59187da2cc539059a9851/transformed/jetified-text-recognition-16.0.0-beta4/AndroidManifest.xml" />
-      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/50bb5e14a2d59187da2cc539059a9851/transformed/jetified-text-recognition-16.0.0-beta4/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/7561cf19dcb4ecf9a51483d2dd98bd1a/transformed/jetified-text-recognition-16.0.0-beta4/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7561cf19dcb4ecf9a51483d2dd98bd1a/transformed/jetified-text-recognition-16.0.0-beta4/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/7561cf19dcb4ecf9a51483d2dd98bd1a/transformed/jetified-text-recognition-16.0.0-beta4/res" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.mlkit/text-recognition/16.0.0-beta4/ace98f39b262c59be4be4d52b871d1ba5dfff723/text-recognition-16.0.0-beta4-javadoc.jar!/" />
