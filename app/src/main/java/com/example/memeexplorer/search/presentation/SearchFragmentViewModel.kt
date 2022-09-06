@@ -8,12 +8,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.memeexplorer.common.domain.model.NoMoreMemesException
+import com.example.memeexplorer.common.domain.model.meme.Meme
+import com.example.memeexplorer.common.domain.model.pagination.Pagination
 import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
 import com.example.memeexplorer.common.utils.createExceptionHandler
+import com.example.memeexplorer.search.domain.model.SearchParameters
+import com.example.memeexplorer.search.domain.model.SearchResults
+import com.example.memeexplorer.search.domain.usecases.RequestNextPageOfMemes
 import com.example.memeexplorer.search.domain.usecases.SearchMemes
 import com.kh69.logging.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.subjects.BehaviorSubject
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,6 +34,7 @@ import kotlin.coroutines.CoroutineContext
 class SearchFragmentViewModel @Inject constructor(
     private val uiMemeMapper: UiMemeMapper,
     private val searchMemes: SearchMemes,
+    private val requestNextPageOfMemes: RequestNextPageOfMemes,
     private val compositeDisposable: CompositeDisposable
 ) : ViewModel(), CoroutineScope {
 
@@ -38,8 +46,75 @@ class SearchFragmentViewModel @Inject constructor(
 
     val state: StateFlow<SearchViewState> = _state.asStateFlow()
 
+    var isLoadingMoreMemes: Boolean = false
+        private set
+
     fun onEvent(event: SearchEvent) {
-        onSearchParametersUpdate(event)
+        when(event) {
+            is SearchEvent.RequestInitialMemesList -> loadMemes()
+            is SearchEvent.PrepareForSearch -> prepareForSearch()
+            else -> onSearchParametersUpdate(event)
+        }
+    }
+
+    private fun loadMemes() {
+        if (state.value.memes.isEmpty()) {
+            loadNextMemePage()
+        }
+    }
+
+    private fun loadNextMemePage() {
+        isLoadingMoreMemes = true
+        val errorMessage = "Failed to fetch memes"
+        val exceptionHandler = viewModelScope.createExceptionHandler(errorMessage) { onFailure(it) }
+
+        viewModelScope.launch(exceptionHandler) {
+            Logger.d("Requesting more memes.")
+            val pagination = requestNextPageOfMemes(++currentPage)
+
+            onPaginationInfoObtained(pagination)
+            isLoadingMoreMemes = false
+        }
+    }
+
+    private fun onPaginationInfoObtained(pagination: Pagination) {
+        currentPage = pagination.currentPage
+    }
+
+    private fun prepareForSearch() {
+        setupSearchSubscription()
+    }
+
+    private fun setupSearchSubscription() {
+        searchMemes(querySubject)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { onSearchResults(it) },
+                { onFailure(it) }
+            )
+            .addTo(compositeDisposable)
+    }
+
+    private fun onSearchResults(searchResults: SearchResults) {
+        val (memes, searchParameters) = searchResults
+
+        if (memes.isEmpty()) {
+            onEmptyCacheResults(searchParameters)
+        } else {
+            onMemeList(memes)
+        }
+    }
+
+    private fun onMemeList(memes: List<Meme>) {
+        _state.update { oldState ->
+            oldState.updateToHasSearchResults(memes.map { uiMemeMapper.mapToView(it) })
+        }
+    }
+
+    private fun onEmptyCacheResults(searchParameters: SearchParameters) {
+        _state.update { oldState ->
+            oldState.updateToSearchingRemotely()
+        }
     }
 
     private fun onSearchParametersUpdate(event: SearchEvent) {

@@ -5,6 +5,17 @@
     <string name="clear_search">clear</string>
     <string name="image_of">%1$d of %2$d</string>
     <string name="search_hint">Search for memes</string>
+    <string name="guess_ill_die_meme">Guess ill die meme</string>
+    <string name="creepy_pepe">Pepe The Frog</string>
+    <string name="search_remotely_text_label">Going \"here kitty kitty!\" at the remote server...</string>
+    <string name="no_search_results_text_label">Sorry, couldn\'t find anything :(</string>
+    <string name="an_error_occurred">An error occurred. Please try again later.</string>
+    <string name="find_memes_screen_label">Find Memes</string>
+
+    <string name="no_memes_found">No memes found</string>
+    <string name="initial_search_text_label">Use the above search field to find your meme!</string>
+
+
 
 
 

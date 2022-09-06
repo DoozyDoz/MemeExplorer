@@ -21,7 +21,7 @@
             android:name=".activities.Test"
             android:exported="false" />
         <activity
-            android:name=".activities.Splash"
+            android:name=".common.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -48,8 +48,8 @@
             android:name=".activities.MainActivity"
             android:exported="true" />
 
-        <service android:name=".utilities.TranslatorService" />
-        <service android:name=".utilities.TranslatorJob" />
+<!--        <service android:name=".utilities.TranslatorService" />-->
+<!--        <service android:name=".utilities.TranslatorJob" />-->
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"

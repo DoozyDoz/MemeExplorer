@@ -4,6 +4,8 @@ import com.example.memeexplorer.common.presentation.Event
 import com.example.memeexplorer.common.presentation.model.UIMeme
 
 data class SearchViewState(
+    val loading: Boolean = true,
+    val memes: List<UIMeme> = emptyList(),
     val noSearchQuery: Boolean = true,
     val searchResults: List<UIMeme> = emptyList(),
     val searchingMemes: Boolean = false,
