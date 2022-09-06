@@ -6,7 +6,10 @@ import android.net.Uri
 import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.memeexplorer.common.domain.model.NoMoreMemesException
 import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
+import com.example.memeexplorer.common.utils.createExceptionHandler
 import com.example.memeexplorer.search.domain.usecases.SearchMemes
 import com.kh69.logging.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -122,5 +125,14 @@ class SearchFragmentViewModel @Inject constructor(
         }
     }
 
+    private fun onFailure(throwable: Throwable) {
+        _state.update { oldState ->
+            if (throwable is NoMoreMemesException) {
+                oldState.updateToNoResultsAvailable()
+            } else {
+                oldState.updateToHasFailure(throwable)
+            }
+        }
+    }
 
 }
