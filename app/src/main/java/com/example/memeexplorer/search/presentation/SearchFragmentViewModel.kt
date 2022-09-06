@@ -16,6 +16,7 @@ import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
 import com.example.memeexplorer.search.domain.usecases.RequestNextPageOfMemes
 import com.example.memeexplorer.search.domain.usecases.SearchMemes
+import com.example.memeexplorer.search.domain.usecases.StoreMemes
 import com.kh69.logging.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -35,6 +36,7 @@ class SearchFragmentViewModel @Inject constructor(
     private val uiMemeMapper: UiMemeMapper,
     private val searchMemes: SearchMemes,
     private val requestNextPageOfMemes: RequestNextPageOfMemes,
+    private val storeMemes: StoreMemes,
     private val compositeDisposable: CompositeDisposable
 ) : ViewModel(), CoroutineScope {
 
@@ -50,7 +52,7 @@ class SearchFragmentViewModel @Inject constructor(
         private set
 
     fun onEvent(event: SearchEvent) {
-        when(event) {
+        when (event) {
             is SearchEvent.RequestInitialMemesList -> loadMemes()
             is SearchEvent.PrepareForSearch -> prepareForSearch()
             else -> onSearchParametersUpdate(event)
@@ -194,9 +196,10 @@ class SearchFragmentViewModel @Inject constructor(
 
     fun getAllImages(contentResolver: ContentResolver) {
         launch(Dispatchers.Main) {
-            imagesLiveData.value = withContext(Dispatchers.IO) {
+           val loaderJob =  async(Dispatchers.IO) {
                 loadImagesfromSDCard(contentResolver)
             }
+            storeMemes(loaderJob.await())
         }
     }
 

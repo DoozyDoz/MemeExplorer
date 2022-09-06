@@ -4,10 +4,12 @@ import android.widget.ImageView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.memeexplorer.R
+import com.example.memeexplorer.common.domain.model.meme.Meme
 import com.kh69.logging.Logger
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 
 fun ImageView.setImage(url: String) {
@@ -18,6 +20,8 @@ fun ImageView.setImage(url: String) {
         .transition(DrawableTransitionOptions.withCrossFade())
         .into(this)
 }
+
+fun String.toMeme() = Meme(UUID.randomUUID(),this)
 
 inline fun CoroutineScope.createExceptionHandler(
     message: String,

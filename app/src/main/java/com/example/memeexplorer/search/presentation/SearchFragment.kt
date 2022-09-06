@@ -19,7 +19,7 @@ import com.example.memeexplorer.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
-class SearchFragment: Fragment() {
+class SearchFragment : Fragment() {
     companion object {
         private const val ITEMS_PER_ROW = 2
     }
@@ -76,21 +76,17 @@ class SearchFragment: Fragment() {
     }
 
     private fun updateScreenState(newState: SearchViewState, searchAdapter: MemesAdapter) {
-        val (
-            inInitialState,
-            searchResults,
-            searchingRemotely,
-            noResultsState,
-            failure
-        ) = newState
 
-        updateInitialStateViews(inInitialState)
-        searchAdapter.submitList(searchResults)
 
-        updateRemoteSearchViews(searchingRemotely)
-        updateNoResultsViews(noResultsState)
-        handleFailures(failure)
+        searchAdapter.submitList(newState.memes)
+        updateInitialStateViews(newState.noSearchQuery)
+        searchAdapter.submitList(newState.memes)
+
+        updateRemoteSearchViews(newState.loading)
+        updateNoResultsViews(newState.noMemeResults)
+        handleFailures(newState.failure)
     }
+
     private fun updateInitialStateViews(inInitialState: Boolean) {
         binding.initialSearchImageView.isVisible = inInitialState
         binding.initialSearchText.isVisible = inInitialState
@@ -112,8 +108,7 @@ class SearchFragment: Fragment() {
         val fallbackMessage = getString(R.string.an_error_occurred)
         val snackbarMessage = if (unhandledFailure.message.isNullOrEmpty()) {
             fallbackMessage
-        }
-        else {
+        } else {
             unhandledFailure.message!!
         }
 
@@ -121,6 +116,7 @@ class SearchFragment: Fragment() {
             Snackbar.make(requireView(), snackbarMessage, Snackbar.LENGTH_SHORT).show()
         }
     }
+
     private fun prepareForSearch() {
         setupSearchViewListener()
         viewModel.onEvent(SearchEvent.PrepareForSearch)
