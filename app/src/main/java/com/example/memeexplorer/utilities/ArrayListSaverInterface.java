@@ -45,7 +45,7 @@ public class ArrayListSaverInterface {
 
 
         for (ImageDataModel image : images) {
-            if (new File(image.getImagePath()).exists()  && isImageFile(image.getImagePath())) {
+            if (new File(image.getImagePath()).exists() && isImageFile(image.getImagePath())) {
                 pathArray.add(image.getImagePath());
             }
 
@@ -53,6 +53,7 @@ public class ArrayListSaverInterface {
         return pathArray;
 
     }
+
     public ArrayList<String> getPathsArray() {
         allImages = gettAllImages(mContext);
         for (ImageDataModel image : allImages) {
@@ -60,27 +61,6 @@ public class ArrayListSaverInterface {
                 newArray.add(image.getImagePath());
             }
         }
-
-//        String[] STAR = {"*"};
-//        String[] projection = {MediaStore.MediaColumns.DATA,
-//                MediaStore.Images.Media.DISPLAY_NAME};
-//        Uri uri = MediaStore.Files.getContentUri("external");
-////        Cursor cursor = mContext.getContentResolver().query(uri, STAR, null, null, null);
-//        Cursor cursor = mContext.getContentResolver().query(uri, projection, null, null, null);
-//
-//        if (cursor != null) {
-//            if (cursor.moveToFirst()) {
-//                do {
-//                    String path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-//                    if (new File(path).exists()) {
-//                        newArray.add(path);
-//                    }
-//
-//                    Log.i("path :", path);
-//                } while (cursor.moveToNext());
-//            }
-//            cursor.close();
-//        }
         return readArraylist();
 
     }

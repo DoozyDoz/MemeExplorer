@@ -15,9 +15,6 @@ class MemeLoaderMemeRepository @Inject constructor(
     private val cache: Cache
 ) : MemeRepository {
 
-    // fetch these from shared preferences, after storing them in onboarding screen
-    private val postcode = "07097"
-    private val maxDistanceMiles = 100
 
     override fun getMemes(): Flowable<List<Meme>> {
         return cache.getMemes()

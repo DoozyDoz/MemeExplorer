@@ -45,6 +45,8 @@ class SearchFragmentViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(SearchViewState())
     private val querySubject = BehaviorSubject.create<String>()
+    private val idSubject = BehaviorSubject.createDefault("")
+    private val pathSubject = BehaviorSubject.createDefault("")
 
     val state: StateFlow<SearchViewState> = _state.asStateFlow()
 
@@ -55,8 +57,13 @@ class SearchFragmentViewModel @Inject constructor(
         when (event) {
             is SearchEvent.RequestInitialMemesList -> loadMemes()
             is SearchEvent.PrepareForSearch -> prepareForSearch()
+//            is SearchEvent.StoreMemes -> saveMemes()
             else -> onSearchParametersUpdate(event)
         }
+    }
+
+    suspend fun saveMemes(paths: List<String>) {
+        storeMemes(paths)
     }
 
     private fun loadMemes() {
@@ -88,7 +95,7 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun setupSearchSubscription() {
-        searchMemes(querySubject)
+        searchMemes(querySubject,idSubject,pathSubject)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { onSearchResults(it) },
@@ -172,25 +179,29 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     fun loadImagesfromSDCard(contentResolver: ContentResolver): ArrayList<String> {
-        val uri: Uri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        val cursor: Cursor?
-        val column_index_data: Int
-        val column_index_folder_name: Int
+        val uris = arrayOf(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+        var cursor: Cursor?
+        var column_index_data: Int
+        var column_index_folder_name: Int
         val listOfAllImages = ArrayList<String>()
         var absolutePathOfImage: String? = null
 
         val projection =
-            arrayOf(MediaStore.MediaColumns.DATA, MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+            arrayOf(MediaStore.MediaColumns.DATA, MediaStore.Images.Media.DISPLAY_NAME)
 
-        cursor = contentResolver.query(uri, projection, null, null, null)
+        for (uri in uris){
+            cursor = contentResolver.query(uri, projection, null, null, null)
 
-        column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
-        column_index_folder_name = cursor
-            .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-        while (cursor.moveToNext()) {
-            absolutePathOfImage = cursor.getString(column_index_data)
-            listOfAllImages.add(absolutePathOfImage)
+            column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
+            column_index_folder_name = cursor
+                .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+//            .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+            while (cursor.moveToNext()) {
+                absolutePathOfImage = cursor.getString(column_index_data)
+                listOfAllImages.add(absolutePathOfImage)
+            }
         }
+
         return listOfAllImages
     }
 

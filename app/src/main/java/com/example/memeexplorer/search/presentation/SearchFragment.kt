@@ -1,6 +1,9 @@
 package com.example.memeexplorer.search.presentation
 
+import android.content.ContentResolver
+import android.database.Cursor
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,8 +20,11 @@ import com.example.memeexplorer.common.presentation.Event
 import com.example.memeexplorer.common.presentation.MemesAdapter
 import com.example.memeexplorer.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
+@AndroidEntryPoint
 class SearchFragment : Fragment() {
     companion object {
         private const val ITEMS_PER_ROW = 2
@@ -43,8 +49,8 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupUI()
-//        prepareForSearch()
-//        requestInitialMemesList()
+        prepareForSearch()
+        requestInitialMemesList()
     }
 
     private fun setupUI() {
@@ -141,9 +147,42 @@ class SearchFragment : Fragment() {
     }
 
     private fun requestInitialMemesList() {
-        viewModel.getAllImages(activity!!.contentResolver)
+//        viewModel.getAllImages(activity!!.contentResolver)
+        runBlocking {
+            val paths = loadImagesfromSDCard(activity!!.contentResolver)
+            viewModel.saveMemes(paths)
+        }
         viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
+
+    fun loadImagesfromSDCard(contentResolver: ContentResolver): ArrayList<String> {
+        val uris = arrayOf(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+        var cursor: Cursor?
+        var column_index_data: Int
+        var column_index_folder_name: Int
+        val listOfAllImages = ArrayList<String>()
+        var absolutePathOfImage: String? = null
+
+        val projection =
+            arrayOf(MediaStore.MediaColumns.DATA)
+
+        for (uri in uris){
+            cursor = contentResolver.query(uri, projection, null, null, null)
+
+//            column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
+            column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATA)
+            column_index_folder_name = cursor
+                .getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+//            .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
+            while (cursor.moveToNext()) {
+                absolutePathOfImage = cursor.getString(column_index_data)
+                listOfAllImages.add(absolutePathOfImage)
+            }
+        }
+
+        return listOfAllImages
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
