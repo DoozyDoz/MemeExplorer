@@ -13,6 +13,7 @@
           <stringArguments>
             <stringArg name="classpath">
               <args>
+                <arg>$MODULE_DIR$/../../../logging/build/intermediates/compile_library_classes_jar/debug/classes.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/dc0ebcf91e3b8786e035ddbcd1c6488c/transformed/appcompat-1.5.0-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/630c134b21f6448fb762ba413cdf2210/transformed/fragment-1.3.6-api.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/transforms-3/c40a2602c1d3dcd848c6bb804d007dd0/transformed/jetified-activity-1.5.0-api.jar</arg>

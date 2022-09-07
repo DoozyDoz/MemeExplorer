@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Switch to AppTheme for displaying the activity
-        setTheme(R.style.AppTheme)
+        setTheme(R.style.AppTheme2)
 
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)

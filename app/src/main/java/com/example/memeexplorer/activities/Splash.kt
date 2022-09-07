@@ -14,6 +14,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.memeexplorer.R
+import com.example.memeexplorer.common.MainActivity
 import java.util.*
 
 class Splash : AppCompatActivity() {
@@ -93,7 +94,7 @@ class Splash : AppCompatActivity() {
         // Show splash screen for 2 seconds
         val task: TimerTask = object : TimerTask() {
             override fun run() {
-                startActivity(Intent(this@Splash, DebugActivity::class.java))
+                startActivity(Intent(this@Splash, MainActivity::class.java))
                 finish() // kill current activity
             }
         }

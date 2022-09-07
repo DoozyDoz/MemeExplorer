@@ -43,8 +43,8 @@ class SearchFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupUI()
-        prepareForSearch()
-        requestInitialMemesList()
+//        prepareForSearch()
+//        requestInitialMemesList()
     }
 
     private fun setupUI() {
@@ -76,7 +76,6 @@ class SearchFragment : Fragment() {
     }
 
     private fun updateScreenState(newState: SearchViewState, searchAdapter: MemesAdapter) {
-
 
         searchAdapter.submitList(newState.memes)
         updateInitialStateViews(newState.noSearchQuery)
