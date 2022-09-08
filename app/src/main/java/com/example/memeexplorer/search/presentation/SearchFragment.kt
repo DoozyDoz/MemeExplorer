@@ -149,7 +149,7 @@ class SearchFragment : Fragment() {
     private fun requestInitialMemesList() {
 //        viewModel.getAllImages(activity!!.contentResolver)
         runBlocking {
-            val paths = loadImagesfromSDCard(activity!!.contentResolver)
+            val paths = fetchImages()
             viewModel.saveMemes(paths)
         }
         viewModel.onEvent(SearchEvent.RequestInitialMemesList)
@@ -181,6 +181,23 @@ class SearchFragment : Fragment() {
         }
 
         return listOfAllImages
+    }
+
+    var imageList: ArrayList<String> = ArrayList()
+    fun fetchImages(): ArrayList<String> {
+        val columns = arrayOf(MediaStore.Images.Media.DATA,
+            MediaStore.Images.Media._ID)
+        val imagecursor: Cursor = requireActivity().managedQuery(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
+            null, ""
+        )
+        for (i in 0 until imagecursor.count) {
+            imagecursor.moveToPosition(i)
+            val dataColumnIndex =
+                imagecursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+            imageList.add(imagecursor.getString(dataColumnIndex))
+        }
+        return imageList
     }
 
 
