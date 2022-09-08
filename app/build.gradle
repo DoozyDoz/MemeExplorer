@@ -113,4 +113,8 @@ dependencies {
 
     kapt "androidx.room:room-compiler:$room_version"
 
+    //Tess
+    implementation 'com.rmtheis:tess-two:9.0.0'
+
+
 }

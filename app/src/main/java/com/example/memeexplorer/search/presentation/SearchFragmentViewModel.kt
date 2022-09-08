@@ -37,6 +37,7 @@ class SearchFragmentViewModel @Inject constructor(
     private val searchMemes: SearchMemes,
     private val requestNextPageOfMemes: RequestNextPageOfMemes,
     private val storeMemes: StoreMemes,
+    private val updateMemeTags: UpdateMemeTags,
     private val compositeDisposable: CompositeDisposable
 ) : ViewModel(), CoroutineScope {
 
@@ -64,6 +65,7 @@ class SearchFragmentViewModel @Inject constructor(
 
     suspend fun saveMemes(paths: List<String>) {
         storeMemes(paths)
+        updateMemeTags(paths)
     }
 
     private fun loadMemes() {
