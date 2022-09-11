@@ -1,9 +1,5 @@
-package com.example.memeexplorer.search.presentation
+package com.example.memeexplorer.search.presentation.main
 
-import android.content.ContentResolver
-import android.database.Cursor
-import android.net.Uri
-import android.provider.MediaStore
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -57,9 +53,13 @@ class SearchFragmentViewModel @Inject constructor(
         when (event) {
             is SearchEvent.RequestInitialMemesList -> loadMemes()
             is SearchEvent.PrepareForSearch -> prepareForSearch()
-//            is SearchEvent.StoreMemes -> saveMemes()
+            is SearchEvent.IsLoadingMemes -> updateLoading(event.isLoadingMemes)
             else -> onSearchParametersUpdate(event)
         }
+    }
+
+    private fun updateLoading(isLoading: Boolean) {
+        isLoadingMoreMemes = isLoading
     }
 
     init {

@@ -7,10 +7,23 @@
 
     <fragment
         android:id="@+id/search"
-        android:name="com.example.memeexplorer.search.presentation.SearchFragment"
+        android:name="com.example.memeexplorer.search.presentation.main.SearchFragment"
         android:label="@string/find_memes_screen_label"
-        tools:layout="@layout/fragment_search"
-        />
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_search_to_details"
+            app:destination="@id/memeDetails" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/memeDetails"
+        android:name="com.example.memeexplorer.search.presentation.memedetails.MemeDetailsFragment"
+        android:label="@string/find_memes_screen_label"
+        tools:layout="@layout/fragment_details">
+        <argument
+            android:name="id"
+            app:argType="string" />
+    </fragment>
 
 
 </navigation>

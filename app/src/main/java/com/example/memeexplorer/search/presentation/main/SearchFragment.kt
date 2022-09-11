@@ -1,8 +1,6 @@
-package com.example.memeexplorer.search.presentation
+package com.example.memeexplorer.search.presentation.main
 
-import android.database.Cursor
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,16 +11,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
-import com.CodeBoy.MediaFacer.MediaFacer
 import com.CodeBoy.MediaFacer.MediaFacer.withPictureContex
 import com.CodeBoy.MediaFacer.PictureGet
 import com.example.memeexplorer.R
 import com.example.memeexplorer.common.presentation.Event
 import com.example.memeexplorer.common.presentation.MemesAdapter
+import com.example.memeexplorer.common.presentation.model.UIMeme
 import com.example.memeexplorer.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
-import com.kh69.logging.Logger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -63,7 +61,12 @@ class SearchFragment : Fragment() {
     }
 
     private fun createAdapter(): MemesAdapter {
-        return MemesAdapter()
+        return MemesAdapter().apply {
+            setOnMemeClickListener { memeId ->
+                val action = SearchFragmentDirections.actionSearchToDetails(memeId)
+                findNavController().navigate(action)
+            }
+        }
     }
 
     private fun setupRecyclerView(searchAdapter: MemesAdapter) {
@@ -87,12 +90,17 @@ class SearchFragment : Fragment() {
     private fun updateScreenState(newState: SearchViewState, searchAdapter: MemesAdapter) {
 
         searchAdapter.submitList(newState.memes)
-        updateInitialStateViews(newState.noSearchQuery)
-        searchAdapter.submitList(newState.memes)
+//        updateInitialStateViews(newState.noSearchQuery)
+        updateNoMemesViews(newState.memes)
 
         updateRemoteSearchViews(newState.loading)
-        updateNoResultsViews(newState.noMemeResults)
+//        updateNoResultsViews(newState.noMemeResults)
         handleFailures(newState.failure)
+    }
+
+    private fun updateNoMemesViews(memes: List<UIMeme>) {
+        binding.initialSearchImageView.isVisible = memes.isEmpty()
+        binding.initialSearchText.isVisible = memes.isEmpty()
     }
 
     private fun updateInitialStateViews(inInitialState: Boolean) {
@@ -103,6 +111,9 @@ class SearchFragment : Fragment() {
     private fun updateRemoteSearchViews(searchingRemotely: Boolean) {
         binding.searchRemotelyProgressBar.isVisible = searchingRemotely
         binding.searchRemotelyText.isVisible = searchingRemotely
+
+//        binding.initialSearchImageView.isVisible = searchingRemotely
+//        binding.initialSearchText.isVisible = searchingRemotely
     }
 
     private fun updateNoResultsViews(noResultsState: Boolean) {
@@ -150,10 +161,12 @@ class SearchFragment : Fragment() {
     }
 
     private fun requestInitialMemesList() {
+        viewModel.onEvent(SearchEvent.IsLoadingMemes(true))
         runBlocking {
             val paths = fetchImages()
             viewModel.saveMemes(paths)
         }
+        viewModel.onEvent(SearchEvent.IsLoadingMemes(false))
         viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
 

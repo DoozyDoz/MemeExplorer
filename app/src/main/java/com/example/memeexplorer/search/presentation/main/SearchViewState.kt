@@ -1,4 +1,4 @@
-package com.example.memeexplorer.search.presentation
+package com.example.memeexplorer.search.presentation.main
 
 import com.example.memeexplorer.common.presentation.Event
 import com.example.memeexplorer.common.presentation.model.UIMeme
