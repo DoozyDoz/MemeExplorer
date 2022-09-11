@@ -1,6 +1,5 @@
 package com.example.memeexplorer.search.presentation
 
-import android.content.ContentResolver
 import android.database.Cursor
 import android.os.Bundle
 import android.provider.MediaStore
@@ -15,11 +14,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
+import com.CodeBoy.MediaFacer.MediaFacer
+import com.CodeBoy.MediaFacer.MediaFacer.withPictureContex
+import com.CodeBoy.MediaFacer.PictureGet
 import com.example.memeexplorer.R
 import com.example.memeexplorer.common.presentation.Event
 import com.example.memeexplorer.common.presentation.MemesAdapter
 import com.example.memeexplorer.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
+import com.kh69.logging.Logger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -153,25 +156,32 @@ class SearchFragment : Fragment() {
         }
         viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
-    
+
     var imageList: ArrayList<String> = ArrayList()
 
-    fun fetchImages(): ArrayList<String> {
-        val columns = arrayOf(
-            MediaStore.Images.Media.DATA,
-            MediaStore.Images.Media._ID
-        )
-        val imagecursor: Cursor = requireActivity().managedQuery(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
-            null, ""
-        )
-        for (i in 0 until imagecursor.count) {
-            imagecursor.moveToPosition(i)
-            val dataColumnIndex =
-                imagecursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-            imageList.add(imagecursor.getString(dataColumnIndex))
-        }
-        return imageList
+    private fun fetchImages(): ArrayList<String> {
+
+        Logger.d("imgFetch:starting...")
+//        val columns = arrayOf(
+//            MediaStore.Images.Media.DATA,
+//            MediaStore.Images.Media._ID
+//        )
+//        val imagecursor: Cursor = requireActivity().managedQuery(
+//            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
+//            null, ""
+//        )
+//        for (i in 0 until imagecursor.count) {
+//            imagecursor.moveToPosition(i)
+//            val dataColumnIndex =
+//                imagecursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
+//            imageList.add(imagecursor.getString(dataColumnIndex))
+//        }
+        val allPhotos = withPictureContex(requireActivity())
+            .getAllPictureContents(PictureGet.externalContentUri)
+        Logger.d("imgFetch:Done: results ${allPhotos.size} images found")
+//        Logger.d("imgFetch:Done: results ${imageList.size} images found")
+
+        return allPhotos.map { it.picturePath } as ArrayList<String>
     }
 
 

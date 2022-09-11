@@ -14,10 +14,7 @@ import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
 import com.example.memeexplorer.common.utils.createExceptionHandler
 import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
-import com.example.memeexplorer.search.domain.usecases.RequestNextPageOfMemes
-import com.example.memeexplorer.search.domain.usecases.SearchMemes
-import com.example.memeexplorer.search.domain.usecases.StoreMemes
-import com.example.memeexplorer.search.domain.usecases.UpdateMemeTags
+import com.example.memeexplorer.search.domain.usecases.*
 import com.kh69.logging.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -36,6 +33,7 @@ import kotlin.coroutines.CoroutineContext
 class SearchFragmentViewModel @Inject constructor(
     private val uiMemeMapper: UiMemeMapper,
     private val searchMemes: SearchMemes,
+    private val getMemes: GetMemes,
     private val requestNextPageOfMemes: RequestNextPageOfMemes,
     private val storeMemes: StoreMemes,
     private val updateMemeTags: UpdateMemeTags,
@@ -64,9 +62,36 @@ class SearchFragmentViewModel @Inject constructor(
         }
     }
 
+    init {
+        _state.value = SearchViewState()
+        subscribeToMemeUpdates()
+    }
+
+    private fun subscribeToMemeUpdates() {
+        getMemes()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { onNewMemeList(it) },
+                { onFailure(it) }
+            )
+            .addTo(compositeDisposable)
+    }
+
+    private fun onNewMemeList(memes: List<Meme>) {
+        Logger.d("Got more memes!")
+
+        val mims = memes.map { uiMemeMapper.mapToView(it) }
+
+        val currentList = state.value!!.memes
+        val newMemes = mims.subtract(currentList)
+        val updatedList = currentList + newMemes
+
+        _state.value = state.value!!.copy( loading = false, memes = updatedList)
+    }
+
     suspend fun saveMemes(paths: List<String>) {
         storeMemes(paths)
-        updateMemeTags(paths)
+//        updateMemeTags(paths)
     }
 
     private fun loadMemes() {
@@ -176,46 +201,6 @@ class SearchFragmentViewModel @Inject constructor(
         get() = job + Dispatchers.Main
 
     private var imagesLiveData: MutableLiveData<List<String>> = MutableLiveData()
-
-    fun getImageList(): MutableLiveData<List<String>> {
-        return imagesLiveData
-    }
-
-    fun loadImagesfromSDCard(contentResolver: ContentResolver): ArrayList<String> {
-        val uris = arrayOf(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,MediaStore.Images.Media.INTERNAL_CONTENT_URI)
-        var cursor: Cursor?
-        var column_index_data: Int
-        var column_index_folder_name: Int
-        val listOfAllImages = ArrayList<String>()
-        var absolutePathOfImage: String? = null
-
-        val projection =
-            arrayOf(MediaStore.MediaColumns.DATA, MediaStore.Images.Media.DISPLAY_NAME)
-
-        for (uri in uris){
-            cursor = contentResolver.query(uri, projection, null, null, null)
-
-            column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
-            column_index_folder_name = cursor
-                .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-//            .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
-            while (cursor.moveToNext()) {
-                absolutePathOfImage = cursor.getString(column_index_data)
-                listOfAllImages.add(absolutePathOfImage)
-            }
-        }
-
-        return listOfAllImages
-    }
-
-    fun getAllImages(contentResolver: ContentResolver) {
-        launch(Dispatchers.Main) {
-           val loaderJob =  async(Dispatchers.IO) {
-                loadImagesfromSDCard(contentResolver)
-            }
-            storeMemes(loaderJob.await())
-        }
-    }
 
     private fun onFailure(throwable: Throwable) {
         _state.update { oldState ->
