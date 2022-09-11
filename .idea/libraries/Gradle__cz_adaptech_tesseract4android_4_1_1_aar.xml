@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="Gradle: cz.adaptech:tesseract4android:4.1.1@aar">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d1cbbd36b7a721b656bfc84bb9f184f6/transformed/jetified-tesseract4android-4.1.1/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/d1cbbd36b7a721b656bfc84bb9f184f6/transformed/jetified-tesseract4android-4.1.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d1cbbd36b7a721b656bfc84bb9f184f6/transformed/jetified-tesseract4android-4.1.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/d1cbbd36b7a721b656bfc84bb9f184f6/transformed/jetified-tesseract4android-4.1.1/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/cz.adaptech/tesseract4android/4.1.1/5af5f1b8aa1af6b84a2b377f3231f343680c0c0b/tesseract4android-4.1.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/cz.adaptech/tesseract4android/4.1.1/803af27f46139caa64e36e4ba56a6c1080aeda34/tesseract4android-4.1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

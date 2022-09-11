@@ -17,6 +17,7 @@ import com.example.memeexplorer.search.domain.model.SearchResults
 import com.example.memeexplorer.search.domain.usecases.RequestNextPageOfMemes
 import com.example.memeexplorer.search.domain.usecases.SearchMemes
 import com.example.memeexplorer.search.domain.usecases.StoreMemes
+import com.example.memeexplorer.search.domain.usecases.UpdateMemeTags
 import com.kh69.logging.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers

@@ -45,6 +45,7 @@ public class TessDataManager {
         }
 
         File appFolder = context.getFilesDir();
+//        File appFolder = new File("/storage/emulated/0/memeExplorer");
         File folder = new File(appFolder, tessdir);
         if(!folder.exists()){
             folder.mkdir();

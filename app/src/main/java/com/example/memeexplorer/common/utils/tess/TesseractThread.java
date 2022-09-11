@@ -22,6 +22,6 @@ public class TesseractThread implements Runnable {
             mCallback.fail();
             return;
         }
-        mCallback.succeed(TessEngine.Generate().detectText(mBitmap));
+//        mCallback.succeed(TessEngine.Generate().detectText(mBitmap));
     }
 }

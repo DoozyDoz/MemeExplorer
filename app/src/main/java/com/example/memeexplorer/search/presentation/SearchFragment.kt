@@ -147,7 +147,6 @@ class SearchFragment : Fragment() {
     }
 
     private fun requestInitialMemesList() {
-//        viewModel.getAllImages(activity!!.contentResolver)
         runBlocking {
             val paths = fetchImages()
             viewModel.saveMemes(paths)
@@ -156,7 +155,10 @@ class SearchFragment : Fragment() {
     }
 
     fun loadImagesfromSDCard(contentResolver: ContentResolver): ArrayList<String> {
-        val uris = arrayOf(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+        val uris = arrayOf(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            MediaStore.Images.Media.INTERNAL_CONTENT_URI
+        )
         var cursor: Cursor?
         var column_index_data: Int
         var column_index_folder_name: Int
@@ -166,14 +168,11 @@ class SearchFragment : Fragment() {
         val projection =
             arrayOf(MediaStore.MediaColumns.DATA)
 
-        for (uri in uris){
+        for (uri in uris) {
             cursor = contentResolver.query(uri, projection, null, null, null)
-
-//            column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA)
             column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATA)
             column_index_folder_name = cursor
                 .getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
-//            .getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME)
             while (cursor.moveToNext()) {
                 absolutePathOfImage = cursor.getString(column_index_data)
                 listOfAllImages.add(absolutePathOfImage)
@@ -184,9 +183,12 @@ class SearchFragment : Fragment() {
     }
 
     var imageList: ArrayList<String> = ArrayList()
+
     fun fetchImages(): ArrayList<String> {
-        val columns = arrayOf(MediaStore.Images.Media.DATA,
-            MediaStore.Images.Media._ID)
+        val columns = arrayOf(
+            MediaStore.Images.Media.DATA,
+            MediaStore.Images.Media._ID
+        )
         val imagecursor: Cursor = requireActivity().managedQuery(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
             null, ""
