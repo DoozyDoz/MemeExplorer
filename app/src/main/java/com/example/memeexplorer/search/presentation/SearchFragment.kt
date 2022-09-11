@@ -153,35 +153,7 @@ class SearchFragment : Fragment() {
         }
         viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
-
-    fun loadImagesfromSDCard(contentResolver: ContentResolver): ArrayList<String> {
-        val uris = arrayOf(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-            MediaStore.Images.Media.INTERNAL_CONTENT_URI
-        )
-        var cursor: Cursor?
-        var column_index_data: Int
-        var column_index_folder_name: Int
-        val listOfAllImages = ArrayList<String>()
-        var absolutePathOfImage: String? = null
-
-        val projection =
-            arrayOf(MediaStore.MediaColumns.DATA)
-
-        for (uri in uris) {
-            cursor = contentResolver.query(uri, projection, null, null, null)
-            column_index_data = cursor!!.getColumnIndexOrThrow(MediaStore.Images.ImageColumns.DATA)
-            column_index_folder_name = cursor
-                .getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
-            while (cursor.moveToNext()) {
-                absolutePathOfImage = cursor.getString(column_index_data)
-                listOfAllImages.add(absolutePathOfImage)
-            }
-        }
-
-        return listOfAllImages
-    }
-
+    
     var imageList: ArrayList<String> = ArrayList()
 
     fun fetchImages(): ArrayList<String> {
