@@ -157,30 +157,9 @@ class SearchFragment : Fragment() {
         viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
 
-    var imageList: ArrayList<String> = ArrayList()
-
     private fun fetchImages(): ArrayList<String> {
-
-        Logger.d("imgFetch:starting...")
-//        val columns = arrayOf(
-//            MediaStore.Images.Media.DATA,
-//            MediaStore.Images.Media._ID
-//        )
-//        val imagecursor: Cursor = requireActivity().managedQuery(
-//            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
-//            null, ""
-//        )
-//        for (i in 0 until imagecursor.count) {
-//            imagecursor.moveToPosition(i)
-//            val dataColumnIndex =
-//                imagecursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA)
-//            imageList.add(imagecursor.getString(dataColumnIndex))
-//        }
         val allPhotos = withPictureContex(requireActivity())
             .getAllPictureContents(PictureGet.externalContentUri)
-        Logger.d("imgFetch:Done: results ${allPhotos.size} images found")
-//        Logger.d("imgFetch:Done: results ${imageList.size} images found")
-
         return allPhotos.map { it.picturePath } as ArrayList<String>
     }
 

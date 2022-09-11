@@ -11,8 +11,8 @@ import java.util.*
     indices = [Index("tag")]
 )
 data class CachedMeme(
-    @PrimaryKey
     val memeId: UUID,
+    @PrimaryKey
     val location: String,
     val tag: String
 ) {
