@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.memeexplorer.R;
+import com.example.memeexplorer.extensions.ImageViewKt;
 import com.example.memeexplorer.memeClasses.Meme;
 import com.example.memeexplorer.memeClasses.MemeLab;
 
@@ -77,8 +78,7 @@ public class AdapterGridBasic extends RecyclerView.Adapter<RecyclerView.ViewHold
             if (mMemes.get(position) == null){
                 return;
             }
-            displayImageOriginal(activity, view.image, new File(mMemes.get(position).getLocation()));
-
+            ImageViewKt.setImage(view.image,mMemes.get(position).getLocation());
             view.lyt_parent.setOnClickListener(view1 -> {
                 if (mOnItemClickListener != null) {
                     mOnItemClickListener.onItemClick(view1, mMemes.get(position), position);

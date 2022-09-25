@@ -27,6 +27,7 @@ import com.example.memeexplorer.App
 import com.example.memeexplorer.R
 import com.example.memeexplorer.adapter.AdapterGridBasic
 import com.example.memeexplorer.helpers.OcrDetectorProcessor
+import com.example.memeexplorer.helpers.TinyDB
 import com.example.memeexplorer.memeClasses.Meme
 import com.example.memeexplorer.memeClasses.MemeLab
 import com.example.memeexplorer.utilities.*
@@ -129,22 +130,17 @@ class DebugActivity : AppCompatActivity() {
         AdController.loadInterAd(this@DebugActivity)
         setListLayoutManager()
         GlobalScope.launch(Dispatchers.Default) {
-            pathsArray =
-                async { ArrayListSaverInterfaceKT(applicationContext).getUnFilteredImageListPaths()!! }.await()
-            val firsthundredPaths: List<String> =
-                pathsArray.stream().limit(100).collect(Collectors.toList())
-            adapter = AdapterGridBasic(
-                this@DebugActivity,
-                firsthundredPaths as ArrayList<String>
-            )
-            adapter!!.setOnItemClickListener { _: View?, _: Meme?, position: Int ->
-                AdController.adCounter++
-                AdController.showInterAd(this@DebugActivity, null, 0)
-                viewSingleImage(position, firsthundredPaths)
-            }
-
-            withContext(Dispatchers.Main){
-                recyclerView.adapter = adapter
+            val tinydb = TinyDB(App.applicationContext())
+            pathsArray = tinydb.getListString(Constants.SHARED_PREFS_FILE)
+            if (pathsArray.isEmpty()) {
+                val pathsArrayJob = async {
+                    ArrayListSaverInterface(
+                        applicationContext
+                    ).getUnFilteredImageListPaths()!!
+                }
+                usePaths(pathsArrayJob.await())
+            } else {
+                usePaths(pathsArray)
             }
         }
 
@@ -154,6 +150,26 @@ class DebugActivity : AppCompatActivity() {
         val i = TranslatorService.newIntent(applicationContext)
         i!!.putExtra("receiver", DownReceiver(Handler()))
         applicationContext.startService(i)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    private suspend fun usePaths(paths: ArrayList<String>) {
+        val firsthundredPaths: List<String> =
+            paths.stream().limit(100).collect(Collectors.toList())
+
+        adapter = AdapterGridBasic(
+            this@DebugActivity,
+            firsthundredPaths as ArrayList<String>
+        )
+        adapter!!.setOnItemClickListener { _: View?, _: Meme?, position: Int ->
+            AdController.adCounter++
+            AdController.showInterAd(this@DebugActivity, null, 0)
+            viewSingleImage(position, firsthundredPaths)
+        }
+
+        withContext(Dispatchers.Main) {
+            recyclerView.adapter = adapter
+        }
     }
 
     private fun viewSingleImage(position: Int, paths: ArrayList<String>) {

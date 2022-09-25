@@ -36,7 +36,7 @@ import com.example.memeexplorer.helpers.OcrDetectorProcessor;
 import com.example.memeexplorer.helpers.ProgressActivity;
 import com.example.memeexplorer.memeClasses.Meme;
 import com.example.memeexplorer.memeClasses.MemeLab;
-import com.example.memeexplorer.utilities.ArrayListSaverInterfaceKT;
+import com.example.memeexplorer.utilities.ArrayListSaverInterface;
 import com.example.memeexplorer.utilities.Constants;
 import com.example.memeexplorer.utilities.Function;
 import com.example.memeexplorer.utilities.TranslatorService;
@@ -93,7 +93,7 @@ public class MainActivity extends ProgressActivity {
         i.putExtra("receiver", new DownReceiver(new Handler()));
         context.startService(i);
 
-        pathsArray = new ArrayListSaverInterfaceKT(context).getPathsArray();
+        pathsArray = new ArrayListSaverInterface(context).getPathsArray();
 
 
         int iDisplayWidth = getResources().getDisplayMetrics().widthPixels;

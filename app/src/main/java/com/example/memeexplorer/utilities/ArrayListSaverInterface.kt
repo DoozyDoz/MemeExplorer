@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
 import java.io.File
 import java.net.URLConnection
 
-class ArrayListSaverInterfaceKT(context: Context) {
+class ArrayListSaverInterface(context: Context) {
 
     private var newArray: ArrayList<String>? = null
     var allImages = ArrayList<ImageDataModel>()
@@ -32,13 +32,10 @@ class ArrayListSaverInterfaceKT(context: Context) {
 
 
     fun getUnFilteredImageListPaths(): ArrayList<String>? {
-        val pathArray = java.util.ArrayList<String>()
-        var images: ArrayList<ImageDataModel> = allImages
-        for (image in images) {
-            if (File(image.imagePath).exists() && isImageFile(image.imagePath)) {
-                pathArray.add(image.imagePath)
-            }
-        }
+        val pathArray = ArrayList<String>()
+        val images: ArrayList<ImageDataModel> = allImages
+        pathArray.addAll(images.map { it.imagePath }
+            .filter { File(it).exists() && isImageFile(it) })
         return pathArray
     }
 
