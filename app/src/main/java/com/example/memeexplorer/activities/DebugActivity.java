@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -18,6 +19,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -43,6 +45,7 @@ import com.google.android.gms.vision.text.TextRecognizer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class DebugActivity extends AppCompatActivity {
@@ -127,11 +130,15 @@ public class DebugActivity extends AppCompatActivity {
         pathsArray = new ArrayListSaverInterface(getApplicationContext()).getUnFilteredImageListPaths();
 
         setListLayoutManager();
-        adapter = new AdapterGridBasic(DebugActivity.this, pathsArray);
+        List<String> firsthundredPaths = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            firsthundredPaths = pathsArray.stream().limit(100).collect(Collectors.toList());
+        }
+        adapter = new AdapterGridBasic(DebugActivity.this, ((ArrayList<String>) firsthundredPaths));
         adapter.setOnItemClickListener((view, meme, position) -> {
             AdController.adCounter++;
             AdController.showInterAd(DebugActivity.this, null, 0);
-            viewSingleImage(position,pathsArray);
+            viewSingleImage(position, pathsArray);
         });
         recyclerView.setAdapter(adapter);
 
@@ -139,9 +146,6 @@ public class DebugActivity extends AppCompatActivity {
 
         mTextRecognizer = new TextRecognizer.Builder(getApplicationContext()).build();
         mTextRecognizer.setProcessor(new OcrDetectorProcessor());
-//        if (!mTextRecognizer.isOperational()) {
-//            startActivity(new Intent(DebugActivity.this,loadingActivity.class));
-//        }
         Intent i = TranslatorService.newIntent(getApplicationContext());
         i.putExtra("receiver", new DownReceiver(new Handler()));
         getApplicationContext().startService(i);
@@ -168,17 +172,19 @@ public class DebugActivity extends AppCompatActivity {
 
         searchView = (SearchView) myActionMenuItem.getActionView();
         SearchView.OnQueryTextListener listener = new SearchView.OnQueryTextListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public boolean onQueryTextChange(String query) {
-                if (query.isEmpty()){
-                    adapter = new AdapterGridBasic(DebugActivity.this, pathsArray);
+                if (query.isEmpty()) {
+                    List<String> firsthundredPaths = pathsArray.stream().limit(100).collect(Collectors.toList());
+                    adapter = new AdapterGridBasic(DebugActivity.this, ((ArrayList<String>) firsthundredPaths));
                     adapter.setOnItemClickListener((view, meme, position) -> {
                         AdController.adCounter++;
                         AdController.showInterAd(DebugActivity.this, null, 0);
-                        viewSingleImage(position,pathsArray);
+                        viewSingleImage(position, pathsArray);
                     });
                     recyclerView.setAdapter(adapter);
-                }else{
+                } else {
                     GetMatchingPics matchingPics = new GetMatchingPics(query);
                     matchingPics.execute();
                 }
@@ -186,17 +192,19 @@ public class DebugActivity extends AppCompatActivity {
                 return true;
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.N)
             public boolean onQueryTextSubmit(String query) {
                 Log.e("queryTextSubmit", query);
-                if (query.isEmpty()){
-                    adapter = new AdapterGridBasic(DebugActivity.this, pathsArray);
+                if (query.isEmpty()) {
+                    List<String> firsthundredPaths = pathsArray.stream().limit(100).collect(Collectors.toList());
+                    adapter = new AdapterGridBasic(DebugActivity.this, ((ArrayList<String>) firsthundredPaths));
                     adapter.setOnItemClickListener((view, meme, position) -> {
                         AdController.adCounter++;
                         AdController.showInterAd(DebugActivity.this, null, 0);
-                        viewSingleImage(position,pathsArray);
+                        viewSingleImage(position, pathsArray);
                     });
                     recyclerView.setAdapter(adapter);
-                }else {
+                } else {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
                 }
@@ -232,7 +240,7 @@ public class DebugActivity extends AppCompatActivity {
             adapter.setOnItemClickListener((view, meme, position) -> {
                 AdController.adCounter++;
                 AdController.showInterAd(DebugActivity.this, null, 0);
-                viewSingleImage(position,newPaths);
+                viewSingleImage(position, newPaths);
 
 //                Intent intent = new Intent(DebugActivity.this, SingleImageActivity.class);
 //                intent.putStringArrayListExtra("paths", newPaths);
