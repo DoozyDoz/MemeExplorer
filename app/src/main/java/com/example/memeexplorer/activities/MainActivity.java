@@ -36,7 +36,7 @@ import com.example.memeexplorer.helpers.OcrDetectorProcessor;
 import com.example.memeexplorer.helpers.ProgressActivity;
 import com.example.memeexplorer.memeClasses.Meme;
 import com.example.memeexplorer.memeClasses.MemeLab;
-import com.example.memeexplorer.utilities.ArrayListSaverInterface;
+import com.example.memeexplorer.utilities.ArrayListSaverInterfaceKT;
 import com.example.memeexplorer.utilities.Constants;
 import com.example.memeexplorer.utilities.Function;
 import com.example.memeexplorer.utilities.TranslatorService;
@@ -93,7 +93,7 @@ public class MainActivity extends ProgressActivity {
         i.putExtra("receiver", new DownReceiver(new Handler()));
         context.startService(i);
 
-        pathsArray = new ArrayListSaverInterface(context).getPathsArray();
+        pathsArray = new ArrayListSaverInterfaceKT(context).getPathsArray();
 
 
         int iDisplayWidth = getResources().getDisplayMetrics().widthPixels;
@@ -236,6 +236,7 @@ return null;
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case 1: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -243,14 +244,14 @@ return null;
                     mTextRecognizer = new TextRecognizer.Builder(context).build();
                     mTextRecognizer.setProcessor(new OcrDetectorProcessor());
                     if (!mTextRecognizer.isOperational()) {
-                        startActivity(new Intent(MainActivity.this,loadingActivity.class));
+                        startActivity(new Intent(MainActivity.this, loadingActivity.class));
                     }
 //                    getPathsArray();
                 } else {
                     Toast.makeText(MainActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
                 }
             }
-           
+
 
         }
     }

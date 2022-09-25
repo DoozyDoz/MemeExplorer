@@ -33,7 +33,7 @@ public class TranslatorService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         ResultReceiver receiver = intent.getParcelableExtra("receiver");
-        ArrayList<String> pathsArray = new ArrayListSaverInterface(getApplicationContext()).getPathsArray();
+        ArrayList<String> pathsArray = new ArrayListSaverInterfaceKT(getApplicationContext()).getPathsArray();
         if (pathsArray != null){
             Log.d(TAG, "onHandleIntent: "+ pathsArray.get(0));
         for (int i = 0; i < pathsArray.size(); i++) {

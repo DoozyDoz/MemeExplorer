@@ -23,7 +23,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.TutorialActivity" />
-        <activity android:name=".activities.DebugActivity" />
         <activity android:name=".activities.SingleImageActivity">
             <meta-data
                 android:name="com.google.gms.version"
