@@ -34,10 +34,7 @@ import com.example.memeexplorer.widgets.SpacingItemDecoration
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.vision.Frame
 import com.google.android.gms.vision.text.TextRecognizer
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
 import java.io.File
@@ -125,25 +122,32 @@ class DebugActivity : AppCompatActivity() {
                     .show()
             }
         }
+
         recyclerView = findViewById(R.id.recyclerView)
         adView = findViewById(R.id.adView)
-        AdController.loadBannerAd(this@DebugActivity, adView)
+        AdController.loadBannerAd(this@DebugActivity, adView) // takes time
         AdController.loadInterAd(this@DebugActivity)
-        pathsArray = ArrayListSaverInterfaceKT(applicationContext).getUnFilteredImageListPaths()!!
         setListLayoutManager()
+        GlobalScope.launch(Dispatchers.Default) {
+            pathsArray =
+                async { ArrayListSaverInterfaceKT(applicationContext).getUnFilteredImageListPaths()!! }.await()
+            val firsthundredPaths: List<String> =
+                pathsArray.stream().limit(100).collect(Collectors.toList())
+            adapter = AdapterGridBasic(
+                this@DebugActivity,
+                firsthundredPaths as ArrayList<String>
+            )
+            adapter!!.setOnItemClickListener { _: View?, _: Meme?, position: Int ->
+                AdController.adCounter++
+                AdController.showInterAd(this@DebugActivity, null, 0)
+                viewSingleImage(position, firsthundredPaths)
+            }
 
-        val firsthundredPaths: List<String?> =
-            pathsArray.stream().limit(100).collect(Collectors.toList())
-        adapter = AdapterGridBasic(
-            this@DebugActivity,
-            firsthundredPaths as ArrayList<String?>
-        )
-        adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
-            AdController.adCounter++
-            AdController.showInterAd(this@DebugActivity, null, 0)
-            viewSingleImage(position, pathsArray)
+            withContext(Dispatchers.Main){
+                recyclerView.adapter = adapter
+            }
         }
-        recyclerView.adapter = adapter
+
         mMemeLab = MemeLab.get(this@DebugActivity)
         mTextRecognizer = TextRecognizer.Builder(applicationContext).build()
         mTextRecognizer.setProcessor(OcrDetectorProcessor())
@@ -173,16 +177,16 @@ class DebugActivity : AppCompatActivity() {
             @RequiresApi(Build.VERSION_CODES.N)
             override fun onQueryTextChange(query: String): Boolean {
                 if (query.isEmpty()) {
-                    val firsthundredPaths: List<String?> =
+                    val firsthundredPaths: List<String> =
                         pathsArray.stream().limit(100).collect(Collectors.toList())
                     adapter = AdapterGridBasic(
                         this@DebugActivity,
-                        firsthundredPaths as ArrayList<String?>
+                        firsthundredPaths as ArrayList<String>
                     )
                     adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
                         AdController.adCounter++
                         AdController.showInterAd(this@DebugActivity, null, 0)
-                        viewSingleImage(position, pathsArray)
+                        viewSingleImage(position, firsthundredPaths)
                     }
                     recyclerView.adapter = adapter
                 } else {
@@ -195,24 +199,26 @@ class DebugActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String): Boolean {
                 Log.e("queryTextSubmit", query)
                 if (query.isEmpty()) {
-                    val firsthundredPaths: List<String?> =
+                    val firsthundredPaths: List<String> =
                         pathsArray.stream().limit(100).collect(Collectors.toList())
                     adapter = AdapterGridBasic(
                         this@DebugActivity,
-                        firsthundredPaths as ArrayList<String?>
+                        firsthundredPaths as ArrayList<String>
                     )
                     adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
                         AdController.adCounter++
                         AdController.showInterAd(this@DebugActivity, null, 0)
-                        viewSingleImage(position, pathsArray)
+                        viewSingleImage(position, firsthundredPaths)
                     }
-                    recyclerView!!.adapter = adapter
+                    recyclerView.adapter = adapter
                 } else {
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                     imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
                 }
                 return true
             }
+
+
         }
         searchView!!.setOnQueryTextListener(listener)
         return true
@@ -272,7 +278,11 @@ class DebugActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         onRequestPermissionsResult(requestCode, grantResults)
     }
