@@ -22,8 +22,7 @@ import com.example.memeexplorer.common.presentation.model.UIMeme
 import com.example.memeexplorer.databinding.FragmentSearchBinding
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class SearchFragment : Fragment() {
@@ -162,12 +161,9 @@ class SearchFragment : Fragment() {
 
     private fun requestInitialMemesList() {
         viewModel.onEvent(SearchEvent.IsLoadingMemes(true))
-        runBlocking {
-            val paths = fetchImages()
-            viewModel.saveMemes(paths)
-        }
+        viewModel.onEvent(SearchEvent.FetchImages)
         viewModel.onEvent(SearchEvent.IsLoadingMemes(false))
-        viewModel.onEvent(SearchEvent.RequestInitialMemesList)
+//        viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
 
     private fun fetchImages(): ArrayList<String> {

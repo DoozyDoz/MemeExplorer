@@ -30,6 +30,7 @@ class SearchFragmentViewModel @Inject constructor(
     private val uiMemeMapper: UiMemeMapper,
     private val searchMemes: SearchMemes,
     private val getMemes: GetMemes,
+    private val fetchImages: FetchImages,
     private val requestNextPageOfMemes: RequestNextPageOfMemes,
     private val storeMemes: StoreMemes,
     private val updateMemeTags: UpdateMemeTags,
@@ -52,9 +53,17 @@ class SearchFragmentViewModel @Inject constructor(
     fun onEvent(event: SearchEvent) {
         when (event) {
             is SearchEvent.RequestInitialMemesList -> loadMemes()
+            is SearchEvent.FetchImages -> getImages()
             is SearchEvent.PrepareForSearch -> prepareForSearch()
             is SearchEvent.IsLoadingMemes -> updateLoading(event.isLoadingMemes)
             else -> onSearchParametersUpdate(event)
+        }
+    }
+
+    private fun getImages() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val paths = async { fetchImages() }
+            saveMemes(paths.await())
         }
     }
 

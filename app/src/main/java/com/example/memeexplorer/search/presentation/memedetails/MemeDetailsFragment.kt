@@ -57,8 +57,8 @@ class MemeDetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeState()
-        val event = MemeDetailsFragmentViewModel.LoadAnimalDetails(animalId!!)
-        viewModel.handleEvent(event)
+//        observeState()
+//        val event = MemeDetailsFragmentViewModel.LoadAnimalDetails(animalId!!)
+//        viewModel.handleEvent(event)
     }
 }
