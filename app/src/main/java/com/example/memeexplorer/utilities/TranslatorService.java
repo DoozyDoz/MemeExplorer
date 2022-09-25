@@ -47,10 +47,10 @@ public class TranslatorService extends IntentService {
 
             File file = new File(filepath);
             if(file.exists() && isImageFile(filepath)){
-                Bitmap btm = DebugActivity.convertPathToBitmap(filepath);
+                Bitmap btm = DebugActivity.Companion.convertPathToBitmap(filepath);
                 if (btm != null){
                 outputFrame = new Frame.Builder().setBitmap(btm).build();
-                DebugActivity.detectText(getApplicationContext(), outputFrame, filepath);
+                DebugActivity.Companion.detectText(getApplicationContext(), outputFrame, filepath);
                 }
             }
         }

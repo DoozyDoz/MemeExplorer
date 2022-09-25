@@ -4,7 +4,7 @@
     package="com.example.memeexplorer">
 
     <application
-        android:name=".Application"
+        android:name=".App"
         android:allowBackup="true"
         android:hardwareAccelerated="false"
         android:icon="@mipmap/ic_launcher"
@@ -15,14 +15,16 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".activities.SplashActivity"
-            android:exported="true">
+        <activity android:name=".activities.SplashActivityKT"
+            android:exported="true"
+            android:theme="@style/AppTheme.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".activities.TutorialActivity" />
+        <activity android:name=".activities.DebugActivity" />
         <activity android:name=".activities.SingleImageActivity">
             <meta-data
                 android:name="com.google.gms.version"

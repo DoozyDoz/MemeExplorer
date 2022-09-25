@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 
 android {
@@ -80,7 +81,12 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
-
+// media store scanner
     implementation 'com.github.CodeBoy722:MediaFacer:1.0.3'
+
+    // runtime permissions
+    implementation "com.github.permissions-dispatcher:permissionsdispatcher:4.9.2"
+//    annotationProcessor "com.github.permissions-dispatcher:permissionsdispatcher-processor:4.9.2"
+    kapt "com.github.permissions-dispatcher:permissionsdispatcher-processor:4.9.2"
 
 }

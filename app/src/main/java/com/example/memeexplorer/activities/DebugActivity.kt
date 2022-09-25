@@ -1,10 +1,12 @@
 package com.example.memeexplorer.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -15,11 +17,13 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.memeexplorer.App
 import com.example.memeexplorer.R
 import com.example.memeexplorer.adapter.AdapterGridBasic
 import com.example.memeexplorer.helpers.OcrDetectorProcessor
@@ -34,8 +38,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
+import permissions.dispatcher.NeedsPermission
+import permissions.dispatcher.RuntimePermissions
 import java.io.File
+import java.util.stream.Collectors
 
+@RuntimePermissions
 class DebugActivity : AppCompatActivity() {
     private var parent_view: View? = null
     private lateinit var recyclerView: RecyclerView
@@ -47,7 +55,8 @@ class DebugActivity : AppCompatActivity() {
     private var adView: AdView? = null
     private var adapter: AdapterGridBasic? = null
 
-    companion object{
+    companion object {
+
         fun convertPathToBitmap(filepath: String?): Bitmap? {
             val sd = Environment.getExternalStorageDirectory()
             val image = File(filepath)
@@ -57,34 +66,38 @@ class DebugActivity : AppCompatActivity() {
                 Bitmap.createScaledBitmap(bitmap, 120, 120, true)
             } else null
         }
-    }
 
-    fun detectText(context: Context?, frame: Frame?, location: String) {
-        mTextRecognizer = TextRecognizer.Builder(context).build()
-        mTextRecognizer.setProcessor(OcrDetectorProcessor())
-        val items = mTextRecognizer.detect(frame)
-        var s = ""
-        for (i in 0 until items.size()) {
-            val item = items.valueAt(i)
-            if (item != null) {
-                s += item.value + " "
+        fun detectText(context: Context?, frame: Frame?, location: String) {
+            val textRecognizer = TextRecognizer.Builder(context).build()
+            textRecognizer.setProcessor(OcrDetectorProcessor())
+            val items = textRecognizer.detect(frame!!)
+            var s = ""
+            for (i in 0 until items.size()) {
+                val item = items.valueAt(i)
+                if (item != null) {
+                    s += item.value + " "
+                }
             }
+            Log.i("textss :", s)
+            saveInDb(location, s)
         }
-        Log.i("textss :", s)
-        saveInDb(location, s)
+
+
+        private fun saveInDb(location: String, tag: String) {
+            val memeLab = MemeLab.get(App.applicationContext())
+            val m = Meme(location, tag)
+            memeLab!!.addMeme(m)
+        }
     }
 
-    private fun saveInDb(location: String, tag: String) {
-        val m = Meme(location, tag)
-        mMemeLab!!.addMeme(m)
-    }
-
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_grid_basic)
         parent_view = findViewById(android.R.id.content)
         initToolbar()
-        initComponent()
+        initComponentWithPermissionCheck()
     }
 
     private fun initToolbar() {
@@ -96,7 +109,13 @@ class DebugActivity : AppCompatActivity() {
         Tools.setSystemBarColor(this)
     }
 
-    private fun initComponent() {
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    @NeedsPermission(
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    )
+    fun initComponent() {
         Tools.APP_DIR = Environment.getExternalStorageDirectory().path +
                 File.separator + "OCRGallery"
         val dst = File(Tools.APP_DIR)
@@ -112,13 +131,19 @@ class DebugActivity : AppCompatActivity() {
         AdController.loadInterAd(this@DebugActivity)
         pathsArray = ArrayListSaverInterfaceKT(applicationContext).getUnFilteredImageListPaths()!!
         setListLayoutManager()
-        adapter = AdapterGridBasic(this@DebugActivity, pathsArray)
+
+        val firsthundredPaths: List<String?> =
+            pathsArray.stream().limit(100).collect(Collectors.toList())
+        adapter = AdapterGridBasic(
+            this@DebugActivity,
+            firsthundredPaths as ArrayList<String?>
+        )
         adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
             AdController.adCounter++
             AdController.showInterAd(this@DebugActivity, null, 0)
             viewSingleImage(position, pathsArray)
         }
-        recyclerView.setAdapter(adapter)
+        recyclerView.adapter = adapter
         mMemeLab = MemeLab.get(this@DebugActivity)
         mTextRecognizer = TextRecognizer.Builder(applicationContext).build()
         mTextRecognizer.setProcessor(OcrDetectorProcessor())
@@ -145,25 +170,37 @@ class DebugActivity : AppCompatActivity() {
         val myActionMenuItem = menu.findItem(R.id.menu_item_search)
         searchView = myActionMenuItem.actionView as SearchView
         val listener: SearchView.OnQueryTextListener = object : SearchView.OnQueryTextListener {
+            @RequiresApi(Build.VERSION_CODES.N)
             override fun onQueryTextChange(query: String): Boolean {
                 if (query.isEmpty()) {
-                    adapter = AdapterGridBasic(this@DebugActivity, pathsArray)
+                    val firsthundredPaths: List<String?> =
+                        pathsArray.stream().limit(100).collect(Collectors.toList())
+                    adapter = AdapterGridBasic(
+                        this@DebugActivity,
+                        firsthundredPaths as ArrayList<String?>
+                    )
                     adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
                         AdController.adCounter++
                         AdController.showInterAd(this@DebugActivity, null, 0)
                         viewSingleImage(position, pathsArray)
                     }
-                    recyclerView!!.adapter = adapter
+                    recyclerView.adapter = adapter
                 } else {
-                    val matchingPics = getMatchingPics(query)
+                    getMatchingPics(query)
                 }
                 return true
             }
 
+            @RequiresApi(Build.VERSION_CODES.N)
             override fun onQueryTextSubmit(query: String): Boolean {
                 Log.e("queryTextSubmit", query)
                 if (query.isEmpty()) {
-                    adapter = AdapterGridBasic(this@DebugActivity, pathsArray)
+                    val firsthundredPaths: List<String?> =
+                        pathsArray.stream().limit(100).collect(Collectors.toList())
+                    adapter = AdapterGridBasic(
+                        this@DebugActivity,
+                        firsthundredPaths as ArrayList<String?>
+                    )
                     adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
                         AdController.adCounter++
                         AdController.showInterAd(this@DebugActivity, null, 0)
@@ -207,15 +244,16 @@ class DebugActivity : AppCompatActivity() {
                 newPaths
             }
 
-
-            // on post execute
-            adapter = AdapterGridBasic(this@DebugActivity, newPaths)
-            adapter!!.setOnItemClickListener { _: View?, _: Meme?, position: Int ->
-                AdController.adCounter++
-                AdController.showInterAd(this@DebugActivity, null, 0)
-                viewSingleImage(position, newPaths as ArrayList<String>)
+            withContext(Dispatchers.Main) {
+                // on post execute
+                adapter = AdapterGridBasic(this@DebugActivity, newPaths)
+                adapter!!.setOnItemClickListener { _: View?, _: Meme?, position: Int ->
+                    AdController.adCounter++
+                    AdController.showInterAd(this@DebugActivity, null, 0)
+                    viewSingleImage(position, newPaths as ArrayList<String>)
+                }
+                recyclerView.adapter = adapter
             }
-            recyclerView.adapter = adapter
         }
     }
 
@@ -232,5 +270,10 @@ class DebugActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        onRequestPermissionsResult(requestCode, grantResults)
     }
 }

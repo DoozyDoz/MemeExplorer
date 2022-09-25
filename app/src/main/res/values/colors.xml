@@ -337,4 +337,6 @@
         <item type="color">#ff9800</item>
     </array>
 
+    <color name="main_color">#311B92</color>
+
 </resources>
