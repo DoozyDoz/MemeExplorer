@@ -137,5 +137,4 @@
     <orderEntry type="library" scope="TEST" name="Gradle: androidx.arch.core:core-runtime:2.1.0@aar" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.jakewharton.timber:timber:5.0.1@aar" level="project" />
   </component>
-  <component name="TestModuleProperties" production-module="MemeExplorer.logging.main" />
 </module>

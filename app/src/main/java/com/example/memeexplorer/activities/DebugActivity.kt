@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -15,6 +16,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -35,6 +37,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.util.stream.Collectors
 
 class DebugActivity : AppCompatActivity() {
     private var parent_view: View? = null
@@ -79,6 +82,7 @@ class DebugActivity : AppCompatActivity() {
         mMemeLab!!.addMeme(m)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_grid_basic)
@@ -96,6 +100,7 @@ class DebugActivity : AppCompatActivity() {
         Tools.setSystemBarColor(this)
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun initComponent() {
         Tools.APP_DIR = Environment.getExternalStorageDirectory().path +
                 File.separator + "OCRGallery"
@@ -112,7 +117,13 @@ class DebugActivity : AppCompatActivity() {
         AdController.loadInterAd(this@DebugActivity)
         pathsArray = ArrayListSaverInterface(applicationContext).unFilteredImageListPaths
         setListLayoutManager()
-        adapter = AdapterGridBasic(this@DebugActivity, pathsArray)
+
+        val firsthundredPaths: List<String?> =
+            pathsArray.stream().limit(100).collect(Collectors.toList())
+        adapter = AdapterGridBasic(
+            this@DebugActivity,
+            firsthundredPaths as ArrayList<String?>
+        )
         adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
             AdController.adCounter++
             AdController.showInterAd(this@DebugActivity, null, 0)
@@ -145,9 +156,15 @@ class DebugActivity : AppCompatActivity() {
         val myActionMenuItem = menu.findItem(R.id.menu_item_search)
         searchView = myActionMenuItem.actionView as SearchView
         val listener: SearchView.OnQueryTextListener = object : SearchView.OnQueryTextListener {
+            @RequiresApi(Build.VERSION_CODES.N)
             override fun onQueryTextChange(query: String): Boolean {
                 if (query.isEmpty()) {
-                    adapter = AdapterGridBasic(this@DebugActivity, pathsArray)
+                    val firsthundredPaths: List<String?> =
+                        pathsArray.stream().limit(100).collect(Collectors.toList())
+                    adapter = AdapterGridBasic(
+                        this@DebugActivity,
+                        firsthundredPaths as ArrayList<String?>
+                    )
                     adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
                         AdController.adCounter++
                         AdController.showInterAd(this@DebugActivity, null, 0)
@@ -160,10 +177,16 @@ class DebugActivity : AppCompatActivity() {
                 return true
             }
 
+            @RequiresApi(Build.VERSION_CODES.N)
             override fun onQueryTextSubmit(query: String): Boolean {
                 Log.e("queryTextSubmit", query)
                 if (query.isEmpty()) {
-                    adapter = AdapterGridBasic(this@DebugActivity, pathsArray)
+                    val firsthundredPaths: List<String?> =
+                        pathsArray.stream().limit(100).collect(Collectors.toList())
+                    adapter = AdapterGridBasic(
+                        this@DebugActivity,
+                        firsthundredPaths as ArrayList<String?>
+                    )
                     adapter!!.setOnItemClickListener { view: View?, meme: Meme?, position: Int ->
                         AdController.adCounter++
                         AdController.showInterAd(this@DebugActivity, null, 0)
