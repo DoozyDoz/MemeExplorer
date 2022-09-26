@@ -89,11 +89,9 @@ class SearchFragment : Fragment() {
     private fun updateScreenState(newState: SearchViewState, searchAdapter: MemesAdapter) {
 
         searchAdapter.submitList(newState.memes)
-//        updateInitialStateViews(newState.noSearchQuery)
         updateNoMemesViews(newState.memes)
 
         updateRemoteSearchViews(newState.loading)
-//        updateNoResultsViews(newState.noMemeResults)
         handleFailures(newState.failure)
     }
 
@@ -110,9 +108,6 @@ class SearchFragment : Fragment() {
     private fun updateRemoteSearchViews(searchingRemotely: Boolean) {
         binding.searchRemotelyProgressBar.isVisible = searchingRemotely
         binding.searchRemotelyText.isVisible = searchingRemotely
-
-//        binding.initialSearchImageView.isVisible = searchingRemotely
-//        binding.initialSearchText.isVisible = searchingRemotely
     }
 
     private fun updateNoResultsViews(noResultsState: Boolean) {
@@ -163,7 +158,6 @@ class SearchFragment : Fragment() {
         viewModel.onEvent(SearchEvent.IsLoadingMemes(true))
         viewModel.onEvent(SearchEvent.FetchImages)
         viewModel.onEvent(SearchEvent.IsLoadingMemes(false))
-//        viewModel.onEvent(SearchEvent.RequestInitialMemesList)
     }
 
     private fun fetchImages(): ArrayList<String> {

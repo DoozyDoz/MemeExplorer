@@ -6,5 +6,6 @@ import io.reactivex.Flowable
 interface Cache {
     fun getMemes(): Flowable<List<CachedMeme>>
     suspend fun storeMemes(memes: List<CachedMeme>)
+    suspend fun deleteMemes(memes: List<CachedMeme>)
     fun searchMemesBy(tag: String): Flowable<List<CachedMeme>>
 }

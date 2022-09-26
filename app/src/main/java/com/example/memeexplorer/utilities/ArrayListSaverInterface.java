@@ -19,7 +19,7 @@ import java.util.List;
 
 public class ArrayListSaverInterface {
     private ArrayList<String> newArray;
-    public static ArrayList<ImageDataModel> allImages = new ArrayList<ImageDataModel>();
+    public static ArrayList<ImageDataModel> allImages = new ArrayList<>();
 
     //   private ArrayList<String> oldArray;
     private Context mContext;

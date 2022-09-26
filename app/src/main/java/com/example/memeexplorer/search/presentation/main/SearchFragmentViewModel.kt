@@ -63,8 +63,26 @@ class SearchFragmentViewModel @Inject constructor(
     private fun getImages() {
         viewModelScope.launch(Dispatchers.IO) {
             val paths = async { fetchImages() }
+            syncWithDB(paths.await())
             saveMemes(paths.await())
         }
+    }
+
+    private fun syncWithDB(newPaths: ArrayList<String>) {
+        getMemes()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { onNewMemeList(it) },
+                { onFailure(it) }
+            )
+            .addTo(compositeDisposable)
+    }
+
+    private fun compareWithSavedPaths(oldPaths: ArrayList<String>, newPaths: ArrayList<String>) {
+        val newImages = newPaths.toSet().minus(oldPaths.toSet())
+        val deletedImages = oldPaths.toSet().minus(newPaths.toSet())
+
+        storeMemes(ArrayList(newImages))
     }
 
     private fun updateLoading(isLoading: Boolean) {
@@ -95,7 +113,7 @@ class SearchFragmentViewModel @Inject constructor(
         val newMemes = mims.subtract(currentList)
         val updatedList = currentList + newMemes
 
-        _state.value = state.value!!.copy( loading = false, memes = updatedList)
+        _state.value = state.value!!.copy(loading = false, memes = updatedList)
     }
 
     suspend fun saveMemes(paths: List<String>) {
@@ -132,7 +150,7 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun setupSearchSubscription() {
-        searchMemes(querySubject,idSubject,pathSubject)
+        searchMemes(querySubject, idSubject, pathSubject)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { onSearchResults(it) },

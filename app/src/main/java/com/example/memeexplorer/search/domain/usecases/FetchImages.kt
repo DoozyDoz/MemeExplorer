@@ -7,8 +7,8 @@ import com.example.memeexplorer.activities.MainActivity
 import javax.inject.Inject
 
 
-class FetchImages @Inject constructor(private val mainActivity: MainActivity) {
-    operator fun invoke() = MediaFacer.withPictureContex(MemeExplorerApplication)
+class FetchImages @Inject constructor() {
+    operator fun invoke() = MediaFacer.withPictureContex(MemeExplorerApplication.sAppContext)
         .getAllPictureContents(PictureGet.externalContentUri)
         .map { it.picturePath } as ArrayList<String>
 }

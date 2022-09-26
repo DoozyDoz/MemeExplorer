@@ -32,6 +32,10 @@ class MemeLoaderMemeRepository @Inject constructor(
         cache.storeMemes(memes.map { fromDomain(it) })
     }
 
+    override suspend fun deleteMemes(memes: List<Meme>) {
+        cache.de (memes.map { fromDomain(it) })
+    }
+
 
     override fun searchCachedMemesBy(searchParameters: SearchParameters): Flowable<SearchResults> {
         val (tag) = searchParameters

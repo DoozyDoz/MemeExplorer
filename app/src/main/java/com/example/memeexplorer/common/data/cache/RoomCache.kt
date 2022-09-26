@@ -17,6 +17,10 @@ class RoomCache @Inject constructor(
         memesDao.insertMemes(memes)
     }
 
+    override suspend fun deleteMemes(memes: List<CachedMeme>) {
+        memesDao.deleteMemes(memes)
+    }
+
     override fun searchMemesBy(
         tag: String
     ): Flowable<List<CachedMeme>> {

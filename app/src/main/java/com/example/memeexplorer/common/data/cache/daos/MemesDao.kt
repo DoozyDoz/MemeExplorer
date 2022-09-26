@@ -24,6 +24,14 @@ abstract class MemesDao {
         }
     }
 
+    suspend fun deleteMemes(memes: List<CachedMeme>) {
+        for (meme in memes) {
+            insertMeme(
+                meme
+            )
+        }
+    }
+
 
     @Transaction
     @Query(
