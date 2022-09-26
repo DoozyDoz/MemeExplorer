@@ -7,7 +7,7 @@ import com.example.memeexplorer.extensions.openActivity
 class SplashActivityKT : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState);
-        openActivity(DebugActivity::class.java)
+        openActivity(DashboardActivity::class.java)
         finish()
     }
 }

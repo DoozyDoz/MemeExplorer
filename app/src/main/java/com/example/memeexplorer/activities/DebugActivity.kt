@@ -35,6 +35,7 @@ import com.example.memeexplorer.widgets.SpacingItemDecoration
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.vision.Frame
 import com.google.android.gms.vision.text.TextRecognizer
+import kotlinx.android.synthetic.main.toolbar.*
 import kotlinx.coroutines.*
 import permissions.dispatcher.NeedsPermission
 import permissions.dispatcher.RuntimePermissions
@@ -100,9 +101,7 @@ class DebugActivity : AppCompatActivity() {
 
     private fun initToolbar() {
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        toolbar.setNavigationIcon(R.drawable.ic_menu)
         setSupportActionBar(toolbar)
-        supportActionBar!!.title = "OCR Gallery"
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         Tools.setSystemBarColor(this)
     }
@@ -114,6 +113,11 @@ class DebugActivity : AppCompatActivity() {
         Manifest.permission.READ_EXTERNAL_STORAGE
     )
     fun initComponent() {
+        bt_clear.setOnClickListener {
+            et_search.setText(
+                ""
+            )
+        }
         Tools.APP_DIR = Environment.getExternalStorageDirectory().path +
                 File.separator + "OCRGallery"
         val dst = File(Tools.APP_DIR)
