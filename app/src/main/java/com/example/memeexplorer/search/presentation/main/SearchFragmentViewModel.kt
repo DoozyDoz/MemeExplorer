@@ -84,42 +84,42 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun doOCRWork() {
-        getMemes()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                {
-                    for (meme in it.filter { meme -> meme.mLocation != "NO_TAG" }) {
-                        var continuation = workManager
-                            .beginUniqueWork(
-                                OCR_WORK_NAME,
-                                ExistingWorkPolicy.REPLACE,
-                                OneTimeWorkRequest.from(OCRWorker::class.java)
-                            )
-
-                        val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
-                        ocrBuilder.setInputData(createInputDataForPathList(ArrayList(it.map { image -> image.mLocation }
-                            .filter { location -> location != "NO_TAG" })))
-
-                        continuation = continuation.then(ocrBuilder.build())
-                        val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
-
-                        continuation = continuation.then(save)
-                        continuation.enqueue()
-                    }
-                },
-                { onFailure(it) }
+        getMemes().observeOn(AndroidSchedulers.mainThread()).subscribe({
+            var continuation = workManager.beginUniqueWork(
+                OCR_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                OneTimeWorkRequest.from(OCRWorker::class.java)
             )
-            .addTo(compositeDisposable)
+
+            val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
+            ocrBuilder.setInputData(
+                createInputDataForPathList(
+                    ArrayList(
+                        it.map { image -> image.mLocation }
+                            .filter { location -> location != "NO_TAG" },
+                    )
+                )
+            )
+
+            continuation = continuation.then(ocrBuilder.build())
+
+            val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
+
+            continuation = continuation.then(save)
+            cancelWork()
+            continuation.enqueue()
+
+        }, { onFailure(it) }).addTo(compositeDisposable)
     }
 
     private fun syncWithDB(newPaths: ArrayList<String>) {
-        getMemes()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { compareWithSavedPaths(ArrayList(it.map { meme -> meme.mLocation }), newPaths) },
-                { onFailure(it) }
+        getMemes().observeOn(AndroidSchedulers.mainThread()).subscribe({
+            compareWithSavedPaths(
+                ArrayList(it.map { meme -> meme.mLocation }),
+                newPaths
             )
-            .addTo(compositeDisposable)
+        },
+            { onFailure(it) }).addTo(compositeDisposable)
     }
 
 
@@ -134,8 +134,7 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun compareWithSavedPaths(
-        oldPaths: ArrayList<String>,
-        newPaths: ArrayList<String>
+        oldPaths: ArrayList<String>, newPaths: ArrayList<String>
     ) {
         val newImages = newPaths.toSet().minus(oldPaths.toSet())
         val deletedImages = oldPaths.toSet().minus(newPaths.toSet())
@@ -160,13 +159,8 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun subscribeToMemeUpdates() {
-        getMemes()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { onNewMemeList(it) },
-                { onFailure(it) }
-            )
-            .addTo(compositeDisposable)
+        getMemes().observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ onNewMemeList(it) }, { onFailure(it) }).addTo(compositeDisposable)
     }
 
     private fun onNewMemeList(memes: List<Meme>) {
@@ -215,13 +209,8 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun setupSearchSubscription() {
-        searchMemes(querySubject, idSubject, pathSubject)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { onSearchResults(it) },
-                { onFailure(it) }
-            )
-            .addTo(compositeDisposable)
+        searchMemes(querySubject, idSubject, pathSubject).observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ onSearchResults(it) }, { onFailure(it) }).addTo(compositeDisposable)
     }
 
     private fun onSearchResults(searchResults: SearchResults) {
