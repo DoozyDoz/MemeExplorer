@@ -3,11 +3,19 @@ package com.example.memeexplorer.search.presentation.main
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.*
+import com.example.memeexplorer.MemeExplorerApplication
 import com.example.memeexplorer.common.domain.model.NoMoreMemesException
 import com.example.memeexplorer.common.domain.model.meme.Meme
 import com.example.memeexplorer.common.domain.model.pagination.Pagination
 import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
 import com.example.memeexplorer.common.utils.createExceptionHandler
+import com.example.memeexplorer.common.utils.toArray
+import com.example.memeexplorer.common.utils.workers.GetLocalImagesWorker
+import com.example.memeexplorer.common.utils.workers.SyncDBWorker
+import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_DB_PATHS
+import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_LOCAL_PATHS
+import com.example.memeexplorer.search.domain.Constants.OCR_WORK_NAME
 import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
 import com.example.memeexplorer.search.domain.usecases.*
@@ -46,6 +54,12 @@ class SearchFragmentViewModel @Inject constructor(
     private val idSubject = BehaviorSubject.createDefault("")
     private val pathSubject = BehaviorSubject.createDefault("")
 
+    private val workManager = WorkManager.getInstance(MemeExplorerApplication.sAppContext)
+
+    internal fun cancelWork() {
+        workManager.cancelUniqueWork(OCR_WORK_NAME)
+    }
+
     val state: StateFlow<SearchViewState> = _state.asStateFlow()
 
     var isLoadingMoreMemes: Boolean = false
@@ -68,20 +82,39 @@ class SearchFragmentViewModel @Inject constructor(
         }
     }
 
-    private fun syncWithDB(newPaths: ArrayList<String>) {
+    private fun syncWithDB() {
         getMemes()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { compareWithSavedPaths(ArrayList(it.map { meme -> meme.mLocation }), newPaths) },
+                { compareWithSavedPaths(ArrayList(it.map { meme -> meme.mLocation })) },
                 { onFailure(it) }
             )
             .addTo(compositeDisposable)
     }
 
+    private fun createInputDataForPathList(paths: ArrayList<String>): Data {
+        val builder = Data.Builder()
+        paths.let {
+//            builder.put(KEY_IMAGE_LOCAL_PATHS, paths)
+            builder.putStringArray(KEY_IMAGE_DB_PATHS, toArray<String>(it))
+        }
+        return builder.build()
+    }
+
     private fun compareWithSavedPaths(
-        oldPaths: ArrayList<String>,
-        newPaths: ArrayList<String>
+        oldPaths: ArrayList<String>
     ) {
+
+        var continuation = workManager
+            .beginUniqueWork(
+                OCR_WORK_NAME,
+                ExistingWorkPolicy.REPLACE,
+                OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
+            )
+        val syncBuilder = OneTimeWorkRequestBuilder<SyncDBWorker>()
+        syncBuilder.setInputData(createInputDataForPathList(oldPaths))
+        continuation = continuation.then(syncBuilder.build())
+
         val newImages = newPaths.toSet().minus(oldPaths.toSet())
         val deletedImages = oldPaths.toSet().minus(newPaths.toSet())
 
@@ -92,6 +125,7 @@ class SearchFragmentViewModel @Inject constructor(
             storeMemes(ArrayList(newImages))
             deleteMemes(ArrayList(deletedImages))
         }
+        
     }
 
     private fun updateLoading(isLoading: Boolean) {

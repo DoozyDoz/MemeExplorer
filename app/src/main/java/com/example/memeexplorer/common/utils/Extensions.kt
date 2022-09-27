@@ -45,3 +45,7 @@ inline fun CoroutineScope.createExceptionHandler(
         action(throwable)
     }
 }
+
+inline fun <reified T> toArray(list: List<*>): Array<T> {
+    return (list as List<T>).toTypedArray()
+}
