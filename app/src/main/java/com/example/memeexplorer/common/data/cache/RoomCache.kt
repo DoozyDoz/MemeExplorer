@@ -17,6 +17,10 @@ class RoomCache @Inject constructor(
         memesDao.insertMemes(memes)
     }
 
+    override suspend fun updateMemes(memeMap: Map<String, String>) {
+        memesDao.updateMemes(memeMap)
+    }
+
     override suspend fun deleteMemes(memes: List<CachedMeme>) {
         memesDao.deleteMemes(memes)
     }

@@ -14,6 +14,7 @@ buildscript {
         rxandroid_version = '2.1.1'
 
         room_version = '2.4.2'
+        moshi_version = '1.13.0'
 
     }
 

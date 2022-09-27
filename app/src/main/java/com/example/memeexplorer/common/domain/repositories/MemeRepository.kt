@@ -10,6 +10,7 @@ interface MemeRepository {
     fun getMemes(): Flowable<List<Meme>>
     suspend fun requestMoreMemes(pageToLoad: Int, numberOfItems: Int): PaginatedMemes
     suspend fun storeMemes(memes: List<Meme>)
+    suspend fun updateMemes(memeMap: Map<String, String>)
     suspend fun deleteMemes(memes: List<Meme>)
     fun searchCachedMemesBy(searchParameters: SearchParameters): Flowable<SearchResults>
 }

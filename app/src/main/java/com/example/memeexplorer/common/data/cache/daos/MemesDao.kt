@@ -38,6 +38,21 @@ abstract class MemesDao {
         }
     }
 
+    @Transaction
+    @Query("UPDATE memes SET tag=:tag WHERE location = :location")
+    abstract fun update(location: String, tag: String)
+
+
+    data class MemeUpdate(
+        @ColumnInfo
+        val location: String,
+        val tag: String
+    )
+
+    fun updateMemes(memeMap: Map<String, String>) {
+        memeMap.forEach { (key, value) -> update(key, value) }
+    }
+
 
     @Transaction
     @Query(

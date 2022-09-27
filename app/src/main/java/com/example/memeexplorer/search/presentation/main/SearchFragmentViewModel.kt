@@ -12,9 +12,9 @@ import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
 import com.example.memeexplorer.common.utils.createExceptionHandler
 import com.example.memeexplorer.common.utils.toArray
 import com.example.memeexplorer.common.utils.workers.GetLocalImagesWorker
+import com.example.memeexplorer.common.utils.workers.OCRWorker
 import com.example.memeexplorer.common.utils.workers.SyncDBWorker
 import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_DB_PATHS
-import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_LOCAL_PATHS
 import com.example.memeexplorer.search.domain.Constants.OCR_WORK_NAME
 import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
@@ -79,42 +79,64 @@ class SearchFragmentViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val paths = async { fetchImages() }
             syncWithDB(paths.await())
+            doOCRWork()
         }
     }
 
-    private fun syncWithDB() {
+    private fun doOCRWork() {
         getMemes()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { compareWithSavedPaths(ArrayList(it.map { meme -> meme.mLocation })) },
+                {
+                    for (meme in it.filter { meme -> meme.mLocation != "NO_TAG" }) {
+                        var continuation = workManager
+                            .beginUniqueWork(
+                                OCR_WORK_NAME,
+                                ExistingWorkPolicy.REPLACE,
+                                OneTimeWorkRequest.from(OCRWorker::class.java)
+                            )
+
+                        val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
+                        ocrBuilder.setInputData(createInputDataForPathList(ArrayList(it.map { image -> image.mLocation }
+                            .filter { location -> location != "NO_TAG" })))
+
+                        continuation = continuation.then(ocrBuilder.build())
+                        val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
+
+                        continuation = continuation.then(save)
+                        continuation.enqueue()
+                    }
+                },
                 { onFailure(it) }
             )
             .addTo(compositeDisposable)
     }
 
-    private fun createInputDataForPathList(paths: ArrayList<String>): Data {
+    private fun syncWithDB(newPaths: ArrayList<String>) {
+        getMemes()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { compareWithSavedPaths(ArrayList(it.map { meme -> meme.mLocation }), newPaths) },
+                { onFailure(it) }
+            )
+            .addTo(compositeDisposable)
+    }
+
+
+    private fun createInputDataForPathList(
+        paths: ArrayList<String>
+    ): Data {
         val builder = Data.Builder()
         paths.let {
-//            builder.put(KEY_IMAGE_LOCAL_PATHS, paths)
             builder.putStringArray(KEY_IMAGE_DB_PATHS, toArray<String>(it))
         }
         return builder.build()
     }
 
     private fun compareWithSavedPaths(
-        oldPaths: ArrayList<String>
+        oldPaths: ArrayList<String>,
+        newPaths: ArrayList<String>
     ) {
-
-        var continuation = workManager
-            .beginUniqueWork(
-                OCR_WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
-                OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
-            )
-        val syncBuilder = OneTimeWorkRequestBuilder<SyncDBWorker>()
-        syncBuilder.setInputData(createInputDataForPathList(oldPaths))
-        continuation = continuation.then(syncBuilder.build())
-
         val newImages = newPaths.toSet().minus(oldPaths.toSet())
         val deletedImages = oldPaths.toSet().minus(newPaths.toSet())
 
@@ -125,7 +147,7 @@ class SearchFragmentViewModel @Inject constructor(
             storeMemes(ArrayList(newImages))
             deleteMemes(ArrayList(deletedImages))
         }
-        
+
     }
 
     private fun updateLoading(isLoading: Boolean) {

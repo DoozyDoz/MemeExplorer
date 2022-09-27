@@ -31,6 +31,11 @@ class MemeLoaderMemeRepository @Inject constructor(
         cache.storeMemes(memes.map { fromDomain(it) })
     }
 
+    override suspend fun updateMemes(memeMap: Map<String, String>) {
+        cache.updateMemes(memeMap)
+    }
+
+
     override suspend fun deleteMemes(memes: List<Meme>) {
         cache.deleteMemes(memes.map { fromDomain(it) })
     }

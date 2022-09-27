@@ -122,6 +122,9 @@ dependencies {
 //Work manager
     implementation "androidx.work:work-runtime-ktx:2.7.1"
 
+    implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
+    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshi_version"
+
 
 
 }
