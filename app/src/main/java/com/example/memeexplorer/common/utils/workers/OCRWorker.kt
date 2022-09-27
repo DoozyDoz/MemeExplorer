@@ -22,14 +22,13 @@ private const val TAG = "OCRWorker"
 class OCRWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         return try {
-            val paths = inputData.getStringArray(WorkerConstants.KEY_IMAGE_DB_PATHS)!!.toList()
+            val path = inputData.getString(WorkerConstants.KEY_IMAGE_PATH)
+
             val resultsMap = mutableMapOf<String, String>()
 
             withContext(Dispatchers.Default) {
-                for (path in paths) {
-                    launch {
-                        resultsMap[path] = detectText(path).toString()
-                    }
+                launch {
+                    resultsMap[path.toString()] = detectText(path).toString()
                 }
             }
 

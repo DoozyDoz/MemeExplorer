@@ -15,6 +15,7 @@ import com.example.memeexplorer.common.utils.workers.GetLocalImagesWorker
 import com.example.memeexplorer.common.utils.workers.OCRWorker
 import com.example.memeexplorer.common.utils.workers.SyncDBWorker
 import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_DB_PATHS
+import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_PATH
 import com.example.memeexplorer.search.domain.Constants.OCR_WORK_NAME
 import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
@@ -85,29 +86,32 @@ class SearchFragmentViewModel @Inject constructor(
 
     private fun doOCRWork() {
         getMemes().observeOn(AndroidSchedulers.mainThread()).subscribe({
-            var continuation = workManager.beginUniqueWork(
-                OCR_WORK_NAME,
-                ExistingWorkPolicy.REPLACE,
-                OneTimeWorkRequest.from(OCRWorker::class.java)
-            )
 
-            val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
-            ocrBuilder.setInputData(
-                createInputDataForPathList(
-                    ArrayList(
-                        it.map { image -> image.mLocation }
-                            .filter { location -> location != "NO_TAG" },
+            val errorMessage = "Failed to do ocr work"
+            val exceptionHandler = viewModelScope.createExceptionHandler(errorMessage) { msg -> onFailure(msg) }
+
+            viewModelScope.launch(exceptionHandler) {
+                for (meme in it) {
+                    var continuation = workManager.beginUniqueWork(
+                        OCR_WORK_NAME,
+                        ExistingWorkPolicy.REPLACE,
+                        OneTimeWorkRequest.from(OCRWorker::class.java)
                     )
-                )
-            )
 
-            continuation = continuation.then(ocrBuilder.build())
+                    val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
+                    ocrBuilder.setInputData(
+                        createInputDataForPath(
+                            meme.mLocation
+                        )
+                    )
 
-            val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
-
-            continuation = continuation.then(save)
-            cancelWork()
-            continuation.enqueue()
+                    continuation = continuation.then(ocrBuilder.build())
+                    val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
+                    continuation = continuation.then(save)
+//                cancelWork()
+                    continuation.enqueue()
+                }
+            }
 
         }, { onFailure(it) }).addTo(compositeDisposable)
     }
@@ -123,12 +127,12 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
 
-    private fun createInputDataForPathList(
-        paths: ArrayList<String>
+    private fun createInputDataForPath(
+        path: String
     ): Data {
         val builder = Data.Builder()
-        paths.let {
-            builder.putStringArray(KEY_IMAGE_DB_PATHS, toArray<String>(it))
+        path.let {
+            builder.putString(KEY_IMAGE_PATH, it)
         }
         return builder.build()
     }
