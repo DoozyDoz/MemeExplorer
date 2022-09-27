@@ -30,6 +30,7 @@ class SearchFragmentViewModel @Inject constructor(
     private val uiMemeMapper: UiMemeMapper,
     private val searchMemes: SearchMemes,
     private val getMemes: GetMemes,
+    private val deleteMemes: DeleteMemes,
     private val fetchImages: FetchImages,
     private val requestNextPageOfMemes: RequestNextPageOfMemes,
     private val storeMemes: StoreMemes,
@@ -64,7 +65,6 @@ class SearchFragmentViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val paths = async { fetchImages() }
             syncWithDB(paths.await())
-            saveMemes(paths.await())
         }
     }
 
@@ -72,17 +72,26 @@ class SearchFragmentViewModel @Inject constructor(
         getMemes()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
-                { onNewMemeList(it) },
+                { compareWithSavedPaths(ArrayList(it.map { meme -> meme.mLocation }), newPaths) },
                 { onFailure(it) }
             )
             .addTo(compositeDisposable)
     }
 
-    private fun compareWithSavedPaths(oldPaths: ArrayList<String>, newPaths: ArrayList<String>) {
+    private fun compareWithSavedPaths(
+        oldPaths: ArrayList<String>,
+        newPaths: ArrayList<String>
+    ) {
         val newImages = newPaths.toSet().minus(oldPaths.toSet())
         val deletedImages = oldPaths.toSet().minus(newPaths.toSet())
 
-        storeMemes(ArrayList(newImages))
+        val errorMessage = "Failed to sync"
+        val exceptionHandler = viewModelScope.createExceptionHandler(errorMessage) { onFailure(it) }
+
+        viewModelScope.launch(exceptionHandler) {
+            storeMemes(ArrayList(newImages))
+            deleteMemes(ArrayList(deletedImages))
+        }
     }
 
     private fun updateLoading(isLoading: Boolean) {

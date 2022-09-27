@@ -16,6 +16,12 @@ abstract class MemesDao {
         meme: CachedMeme
     )
 
+
+    @Delete
+    abstract suspend fun deleteMeme(
+        meme: CachedMeme
+    )
+
     suspend fun insertMemes(memes: List<CachedMeme>) {
         for (meme in memes) {
             insertMeme(

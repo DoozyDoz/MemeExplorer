@@ -15,7 +15,6 @@ class MemeLoaderMemeRepository @Inject constructor(
     private val cache: Cache
 ) : MemeRepository {
 
-
     override fun getMemes(): Flowable<List<Meme>> {
         return cache.getMemes()
             .distinctUntilChanged()
@@ -33,7 +32,7 @@ class MemeLoaderMemeRepository @Inject constructor(
     }
 
     override suspend fun deleteMemes(memes: List<Meme>) {
-        cache.de (memes.map { fromDomain(it) })
+        cache.deleteMemes(memes.map { fromDomain(it) })
     }
 
 

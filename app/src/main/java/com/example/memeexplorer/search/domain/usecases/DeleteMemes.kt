@@ -15,7 +15,7 @@ class DeleteMemes @Inject constructor(
         imagePaths: List<String>
     ) {
         return withContext(dispatchersProvider.io()) {
-            memeRepository(imagePaths.map { it.toMeme() })
+            memeRepository.deleteMemes(imagePaths.map { it.toMeme() })
         }
     }
 }

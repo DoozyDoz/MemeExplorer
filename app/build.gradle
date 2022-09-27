@@ -114,11 +114,14 @@ dependencies {
 
     kapt "androidx.room:room-compiler:$room_version"
 
-    //Tess
+//Tess
 //    implementation 'com.rmtheis:tess-two:9.0.0'
 //    implementation 'com.rmtheis:tess-two:9.1.0'
     implementation 'cz.adaptech:tesseract4android:4.1.1'
     implementation 'com.github.CodeBoy722:MediaFacer:1.0.3'
+//Work manager
+    implementation "androidx.work:work-runtime-ktx:2.7.1"
+
 
 
 }
