@@ -16,11 +16,12 @@ class GetLocalImagesWorker(ctx: Context, params: WorkerParameters) : Worker(ctx,
         val appContext = applicationContext
 
         return try {
-            val paths = MediaFacer.withPictureContex(appContext)
-                .getAllPictureContents(PictureGet.externalContentUri)
-                .map { it.picturePath } as ArrayList<String>
-            val outputData = workDataOf(KEY_IMAGE_LOCAL_PATHS to paths)
-            Result.success(outputData)
+//            val paths = MediaFacer.withPictureContex(appContext)
+//                .getAllPictureContents(PictureGet.externalContentUri)
+//                .map { it.picturePath } as ArrayList<String>
+//            val outputData = workDataOf(KEY_IMAGE_LOCAL_PATHS to paths)
+//            Result.success(outputData)
+            Result.success()
         } catch (throwable: Throwable) {
             Log.e(TAG, "Error reading local image files")
             throwable.printStackTrace()

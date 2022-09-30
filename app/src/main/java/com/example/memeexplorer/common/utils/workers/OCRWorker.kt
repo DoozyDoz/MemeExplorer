@@ -12,14 +12,15 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import java.io.File
 
-
 private const val TAG = "OCRWorker"
 
-class OCRWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, params) {
+class OCRWorker(
+    ctx: Context, params: WorkerParameters
+) : CoroutineWorker(ctx, params) {
     override suspend fun doWork(): Result {
         return try {
             val path = inputData.getString(WorkerConstants.KEY_IMAGE_PATH)
@@ -27,17 +28,19 @@ class OCRWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
             val resultsMap = mutableMapOf<String, String>()
 
             withContext(Dispatchers.Default) {
-                launch {
+                val map = async {
                     resultsMap[path.toString()] = detectText(path).toString()
+                    resultsMap
                 }
+//                updateMemes(map.await())
             }
 
             val moshi = Moshi.Builder().build()
+
             val type = Types.newParameterizedType(
-                MutableMap::class.java,
-                String::class.java,
-                String::class.java
+                MutableMap::class.java, String::class.java, String::class.java
             )
+
             val adapter: JsonAdapter<Map<String, String>> = moshi.adapter(type)
             val mapString = adapter.toJson(resultsMap)
 
@@ -66,8 +69,7 @@ class OCRWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx, p
         )
         // 黑名单
         tessBaseAPI.setVariable(
-            TessBaseAPI.VAR_CHAR_BLACKLIST,
-            "!@#$%^&*()_+=-[]}{;:'\"\\|~`,./<>?"
+            TessBaseAPI.VAR_CHAR_BLACKLIST, "!@#$%^&*()_+=-[]}{;:'\"\\|~`,./<>?"
         )
         //        tessBaseAPI.setPageSegMode(TessBaseAPI.PageSegMode.PSM_AUTO); // only one
         tessBaseAPI.pageSegMode = TessBaseAPI.PageSegMode.PSM_AUTO_OSD // only one

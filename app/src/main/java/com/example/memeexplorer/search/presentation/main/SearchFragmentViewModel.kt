@@ -10,11 +10,8 @@ import com.example.memeexplorer.common.domain.model.meme.Meme
 import com.example.memeexplorer.common.domain.model.pagination.Pagination
 import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
 import com.example.memeexplorer.common.utils.createExceptionHandler
-import com.example.memeexplorer.common.utils.toArray
 import com.example.memeexplorer.common.utils.workers.GetLocalImagesWorker
 import com.example.memeexplorer.common.utils.workers.OCRWorker
-import com.example.memeexplorer.common.utils.workers.SyncDBWorker
-import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_DB_PATHS
 import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_PATH
 import com.example.memeexplorer.search.domain.Constants.OCR_WORK_NAME
 import com.example.memeexplorer.search.domain.model.SearchParameters
@@ -48,6 +45,8 @@ class SearchFragmentViewModel @Inject constructor(
 ) : ViewModel(), CoroutineScope {
 
     private var currentPage = 0
+    private var runCount = 0
+    private var oldMemeList = emptyList<Meme>()
     private var searchJob: Job = Job()
 
     private val _state = MutableStateFlow(SearchViewState())
@@ -80,50 +79,51 @@ class SearchFragmentViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val paths = async { fetchImages() }
             syncWithDB(paths.await())
-            doOCRWork()
         }
     }
 
-    private fun doOCRWork() {
-        getMemes().observeOn(AndroidSchedulers.mainThread()).subscribe({
+    private fun doOCRWork(memes: List<Meme>) {
+        if (memes.isEmpty()) return
 
-            val errorMessage = "Failed to do ocr work"
-            val exceptionHandler = viewModelScope.createExceptionHandler(errorMessage) { msg -> onFailure(msg) }
+//        var newMemes: List<Meme>
+//        if (oldMemeList.toSet().containsAll(memes)) {
+//            return
+//        } else {
+//            val currentList = oldMemeList
+//            newMemes = memes.subtract(currentList.toSet()).toList()
+//            val updatedList = currentList + newMemes
+//            oldMemeList = updatedList.toSet().toList()
+//        }
 
-            viewModelScope.launch(exceptionHandler) {
-                for (meme in it) {
-                    var continuation = workManager.beginUniqueWork(
-                        OCR_WORK_NAME,
-                        ExistingWorkPolicy.REPLACE,
-                        OneTimeWorkRequest.from(OCRWorker::class.java)
-                    )
+        val errorMessage = "Failed to do ocr work"
+        val exceptionHandler =
+            viewModelScope.createExceptionHandler(errorMessage) { msg -> onFailure(msg) }
 
-                    val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
-                    ocrBuilder.setInputData(
-                        createInputDataForPath(
-                            meme.mLocation
-                        )
-                    )
+        var continuation = workManager.beginUniqueWork(
+            OCR_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
+        )
 
-                    continuation = continuation.then(ocrBuilder.build())
-                    val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
-                    continuation = continuation.then(save)
-//                cancelWork()
-                    continuation.enqueue()
-                }
-            }
+        for (meme in newMemes) {
+            val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
+            ocrBuilder.setInputData(
+                createInputDataForPath(
+                    meme.mLocation
+                )
+            )
 
-        }, { onFailure(it) }).addTo(compositeDisposable)
+            continuation = continuation.then(ocrBuilder.build())
+//            val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
+//            continuation = continuation.then(save)
+        }
+        continuation.enqueue()
     }
 
     private fun syncWithDB(newPaths: ArrayList<String>) {
-        getMemes().observeOn(AndroidSchedulers.mainThread()).subscribe({
-            compareWithSavedPaths(
-                ArrayList(it.map { meme -> meme.mLocation }),
-                newPaths
-            )
-        },
-            { onFailure(it) }).addTo(compositeDisposable)
+        compareWithSavedPaths(
+            ArrayList(_state.value.memes.map { it.location }), newPaths
+        )
     }
 
 
@@ -168,15 +168,19 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     private fun onNewMemeList(memes: List<Meme>) {
+        runCount++
         Logger.d("Got more memes!")
 
-        val mims = memes.map { uiMemeMapper.mapToView(it) }
+        val meems = memes.map { uiMemeMapper.mapToView(it) }
 
-        val currentList = state.value!!.memes
-        val newMemes = mims.subtract(currentList)
+        val currentList = state.value.memes
+        val newMemes = meems.subtract(currentList.toSet())
         val updatedList = currentList + newMemes
 
-        _state.value = state.value!!.copy(loading = false, memes = updatedList)
+        _state.value = state.value.copy(loading = false, memes = updatedList)
+
+        doOCRWork(memes.filter { it.mTag == "NO_TAG" })
+
     }
 
     suspend fun saveMemes(paths: List<String>) {
