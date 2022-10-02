@@ -77,35 +77,23 @@ class SearchFragmentViewModel @Inject constructor(
 
     private fun getImages() {
         viewModelScope.launch(Dispatchers.IO) {
+            Logger.d("starting to scan")
             val paths = async { fetchImages() }
             syncWithDB(paths.await())
+            Logger.d("done scanning got ${paths.await().size}")
         }
     }
 
     private fun doOCRWork(memes: List<Meme>) {
         if (memes.isEmpty()) return
 
-//        var newMemes: List<Meme>
-//        if (oldMemeList.toSet().containsAll(memes)) {
-//            return
-//        } else {
-//            val currentList = oldMemeList
-//            newMemes = memes.subtract(currentList.toSet()).toList()
-//            val updatedList = currentList + newMemes
-//            oldMemeList = updatedList.toSet().toList()
-//        }
-
-        val errorMessage = "Failed to do ocr work"
-        val exceptionHandler =
-            viewModelScope.createExceptionHandler(errorMessage) { msg -> onFailure(msg) }
-
         var continuation = workManager.beginUniqueWork(
             OCR_WORK_NAME,
-            ExistingWorkPolicy.REPLACE,
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
             OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
         )
 
-        for (meme in newMemes) {
+        for (meme in memes) {
             val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
             ocrBuilder.setInputData(
                 createInputDataForPath(
@@ -127,15 +115,9 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
 
-    private fun createInputDataForPath(
-        path: String
-    ): Data {
-        val builder = Data.Builder()
-        path.let {
-            builder.putString(KEY_IMAGE_PATH, it)
-        }
-        return builder.build()
-    }
+    private fun createInputDataForPath(path: String): Data =
+        Data.Builder().putString(KEY_IMAGE_PATH, path).build()
+
 
     private fun compareWithSavedPaths(
         oldPaths: ArrayList<String>, newPaths: ArrayList<String>
@@ -158,6 +140,7 @@ class SearchFragmentViewModel @Inject constructor(
     }
 
     init {
+//        cancelWork()
         _state.value = SearchViewState()
         subscribeToMemeUpdates()
     }
@@ -179,7 +162,7 @@ class SearchFragmentViewModel @Inject constructor(
 
         _state.value = state.value.copy(loading = false, memes = updatedList)
 
-        doOCRWork(memes.filter { it.mTag == "NO_TAG" })
+//        doOCRWork(memes.filter { it.mTag == "NO_TAG" })
 
     }
 
