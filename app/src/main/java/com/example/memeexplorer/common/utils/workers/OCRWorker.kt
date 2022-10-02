@@ -3,10 +3,16 @@ package com.example.memeexplorer.common.utils.workers
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
+import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.example.memeexplorer.MemeExplorerApplication
+import com.example.memeexplorer.common.di.ChildWorkerFactory
+import com.example.memeexplorer.common.domain.repositories.MemeRepository
 import com.example.memeexplorer.common.utils.tess.TessDataManager
+import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_OCR_RESULT_MAP
+import com.example.memeexplorer.helpers.TinyDB
+import com.example.memeexplorer.search.domain.Constants
 import com.googlecode.tesseract.android.TessBaseAPI
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
@@ -15,36 +21,58 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.withContext
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Provider
 
 private const val TAG = "OCRWorker"
 
 class OCRWorker(
-    ctx: Context, params: WorkerParameters
+    ctx: Context, params: WorkerParameters, var memeRepository: MemeRepository
 ) : CoroutineWorker(ctx, params) {
+    private val c = ctx
+
+    class Factory @Inject constructor(
+        private val memeRepository: Provider<MemeRepository>
+    ) : ChildWorkerFactory {
+        override fun create(appContext: Context, params: WorkerParameters): ListenableWorker {
+            return OCRWorker(
+                appContext,
+                params,
+                memeRepository.get()
+            )
+        }
+    }
+
     override suspend fun doWork(): Result {
+
         return try {
-            val path = inputData.getString(WorkerConstants.KEY_IMAGE_PATH)
 
+//            val prefDB = TinyDB(c)
+//            val ocrMap = prefDB.getString(KEY_OCR_RESULT_MAP)
+//
+//            val moshi = Moshi.Builder().build()
+//
+//            val type = Types.newParameterizedType(
+//                MutableMap::class.java, String::class.java, String::class.java
+//            )
+//
+//            val adapter: JsonAdapter<Map<String, String>> = moshi.adapter(type)
+//            var oldMap = (adapter.fromJson(ocrMap) ?: mutableMapOf()).toMutableMap()
+
+
+            val path = inputData.getString(Constants.KEY_IMAGE_URI)
             val resultsMap = mutableMapOf<String, String>()
-
             withContext(Dispatchers.Default) {
-                val map = async {
+                val newMap = async {
                     resultsMap[path.toString()] = detectText(path).toString()
                     resultsMap
                 }
+                memeRepository.updateMemes(newMap.await())
+//                prefDB.putString(KEY_OCR_RESULT_MAP, adapter.toJson(newMap.await()))
 //                updateMemes(map.await())
             }
 
-            val moshi = Moshi.Builder().build()
-
-            val type = Types.newParameterizedType(
-                MutableMap::class.java, String::class.java, String::class.java
-            )
-
-            val adapter: JsonAdapter<Map<String, String>> = moshi.adapter(type)
-            val mapString = adapter.toJson(resultsMap)
-
-            val outputData = workDataOf(WorkerConstants.KEY_OCR_RESULT_MAP to mapString)
+            val outputData = workDataOf()
             Result.success(outputData)
 
         } catch (throwable: Throwable) {

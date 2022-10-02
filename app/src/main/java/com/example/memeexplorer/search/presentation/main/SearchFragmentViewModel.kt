@@ -1,5 +1,7 @@
 package com.example.memeexplorer.search.presentation.main
 
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +15,8 @@ import com.example.memeexplorer.common.utils.createExceptionHandler
 import com.example.memeexplorer.common.utils.workers.GetLocalImagesWorker
 import com.example.memeexplorer.common.utils.workers.OCRWorker
 import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_PATH
+import com.example.memeexplorer.search.domain.Constants.KEY_IMAGE_INDEX
+import com.example.memeexplorer.search.domain.Constants.KEY_IMAGE_URI
 import com.example.memeexplorer.search.domain.Constants.OCR_WORK_NAME
 import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
@@ -84,28 +88,55 @@ class SearchFragmentViewModel @Inject constructor(
         }
     }
 
+    private fun buildInputDataForOCR(memeUri: String?, index: Int): Data {
+        val builder = Data.Builder()
+        if (memeUri != null) {
+            builder.putString(KEY_IMAGE_URI, memeUri.toString())
+            builder.putInt(KEY_IMAGE_INDEX, index)
+        }
+        return builder.build()
+    }
+
+    private fun buildOcrRequests(memes: List<Meme>): List<OneTimeWorkRequest> {
+        val ocrRequests = mutableListOf<OneTimeWorkRequest>()
+
+        for (i in memes.indices) {
+            val memeUri = memes[i].mLocation
+
+            val ocrRequest = OneTimeWorkRequest.Builder(OCRWorker::class.java)
+                .setInputData(buildInputDataForOCR(memeUri, i))
+                .build()
+            ocrRequests.add(ocrRequest)
+        }
+        return ocrRequests
+    }
+
     private fun doOCRWork(memes: List<Meme>) {
         if (memes.isEmpty()) return
 
-        var continuation = workManager.beginUniqueWork(
-            OCR_WORK_NAME,
-            ExistingWorkPolicy.APPEND_OR_REPLACE,
-            OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
-        )
+        val recognizeText = buildOcrRequests(memes)
+        val workManager = WorkManager.getInstance(MemeExplorerApplication.sAppContext)
+        workManager.beginWith(recognizeText).enqueue()
 
-        for (meme in memes) {
-            val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
-            ocrBuilder.setInputData(
-                createInputDataForPath(
-                    meme.mLocation
-                )
-            )
+//        var continuation = workManager.beginUniqueWork(
+//            OCR_WORK_NAME,
+//            ExistingWorkPolicy.APPEND_OR_REPLACE,
+//            OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
+//        )
 
-            continuation = continuation.then(ocrBuilder.build())
-//            val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
-//            continuation = continuation.then(save)
-        }
-        continuation.enqueue()
+//        for (meme in memes) {
+//            val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
+//            ocrBuilder.setInputData(
+//                createInputDataForPath(
+//                    meme.mLocation
+//                )
+//            )
+//
+//            continuation = continuation.then(ocrBuilder.build())
+////            val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
+////            continuation = continuation.then(save)
+//        }
+//        continuation.enqueue()
     }
 
     private fun syncWithDB(newPaths: ArrayList<String>) {
@@ -162,7 +193,7 @@ class SearchFragmentViewModel @Inject constructor(
 
         _state.value = state.value.copy(loading = false, memes = updatedList)
 
-//        doOCRWork(memes.filter { it.mTag == "NO_TAG" })
+        if (runCount == 1) doOCRWork(memes.filter { it.mTag == "NO_TAG" })
 
     }
 
