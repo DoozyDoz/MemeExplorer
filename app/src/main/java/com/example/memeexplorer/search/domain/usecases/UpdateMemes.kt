@@ -1,4 +1,4 @@
-package com.example.memeexplorer.common.domain.usecases
+package com.example.memeexplorer.search.domain.usecases
 
 import com.example.memeexplorer.common.domain.repositories.MemeRepository
 import com.example.memeexplorer.common.utils.DispatchersProvider

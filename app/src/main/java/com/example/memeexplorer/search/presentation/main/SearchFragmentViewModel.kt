@@ -1,7 +1,5 @@
 package com.example.memeexplorer.search.presentation.main
 
-import android.content.Intent
-import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,9 +10,10 @@ import com.example.memeexplorer.common.domain.model.meme.Meme
 import com.example.memeexplorer.common.domain.model.pagination.Pagination
 import com.example.memeexplorer.common.presentation.model.mappers.UiMemeMapper
 import com.example.memeexplorer.common.utils.createExceptionHandler
-import com.example.memeexplorer.common.utils.workers.GetLocalImagesWorker
 import com.example.memeexplorer.common.utils.workers.OCRWorker
+import com.example.memeexplorer.common.utils.workers.WorkerConstants
 import com.example.memeexplorer.common.utils.workers.WorkerConstants.KEY_IMAGE_PATH
+import com.example.memeexplorer.helpers.TinyDB
 import com.example.memeexplorer.search.domain.Constants.KEY_IMAGE_INDEX
 import com.example.memeexplorer.search.domain.Constants.KEY_IMAGE_URI
 import com.example.memeexplorer.search.domain.Constants.OCR_WORK_NAME
@@ -22,6 +21,9 @@ import com.example.memeexplorer.search.domain.model.SearchParameters
 import com.example.memeexplorer.search.domain.model.SearchResults
 import com.example.memeexplorer.search.domain.usecases.*
 import com.kh69.logging.Logger
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -44,7 +46,7 @@ class SearchFragmentViewModel @Inject constructor(
     private val fetchImages: FetchImages,
     private val requestNextPageOfMemes: RequestNextPageOfMemes,
     private val storeMemes: StoreMemes,
-    private val updateMemeTags: UpdateMemeTags,
+    private val updateMemes: UpdateMemes,
     private val compositeDisposable: CompositeDisposable
 ) : ViewModel(), CoroutineScope {
 
@@ -116,27 +118,32 @@ class SearchFragmentViewModel @Inject constructor(
 
         val recognizeText = buildOcrRequests(memes)
         val workManager = WorkManager.getInstance(MemeExplorerApplication.sAppContext)
-        workManager.beginWith(recognizeText).enqueue()
+        workManager.beginUniqueWork(
+            OCR_WORK_NAME,
+            ExistingWorkPolicy.APPEND_OR_REPLACE, recognizeText
+        ).enqueue()
 
-//        var continuation = workManager.beginUniqueWork(
-//            OCR_WORK_NAME,
-//            ExistingWorkPolicy.APPEND_OR_REPLACE,
-//            OneTimeWorkRequest.from(GetLocalImagesWorker::class.java)
-//        )
+        workManager.getWorkInfosForUniqueWorkLiveData(OCR_WORK_NAME)
+            .observeForever { workInfo ->
+                for (singleWorkInfo in workInfo){
+                    if(singleWorkInfo?.state == WorkInfo.State.SUCCEEDED) {
+                        val prefDB = TinyDB(MemeExplorerApplication.sAppContext)
+                        val ocrMap = prefDB.getString(WorkerConstants.KEY_OCR_RESULT_MAP)
+                        val moshi = Moshi.Builder().build()
+                        val type = Types.newParameterizedType(
+                            MutableMap::class.java, String::class.java, String::class.java
+                        )
+                        val adapter: JsonAdapter<Map<String, String>> = moshi.adapter(type)
+                        val oldMap = (if(ocrMap.isEmpty()) mutableMapOf() else adapter.fromJson(ocrMap))?.toMutableMap()
 
-//        for (meme in memes) {
-//            val ocrBuilder = OneTimeWorkRequestBuilder<OCRWorker>()
-//            ocrBuilder.setInputData(
-//                createInputDataForPath(
-//                    meme.mLocation
-//                )
-//            )
-//
-//            continuation = continuation.then(ocrBuilder.build())
-////            val save = OneTimeWorkRequestBuilder<SyncDBWorker>().build()
-////            continuation = continuation.then(save)
-//        }
-//        continuation.enqueue()
+                        viewModelScope.launch {
+                            updateMemes(oldMap!!)
+                        }
+
+                    }
+                }
+
+            }
     }
 
     private fun syncWithDB(newPaths: ArrayList<String>) {
@@ -314,5 +321,6 @@ class SearchFragmentViewModel @Inject constructor(
             }
         }
     }
+
 
 }

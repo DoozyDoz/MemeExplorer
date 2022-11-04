@@ -1,20 +1,13 @@
 package com.example.memeexplorer.common.utils.workers
 
 import android.content.Context
-import android.util.Log
 import androidx.work.CoroutineWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
-import com.CodeBoy.MediaFacer.MediaFacer
-import com.CodeBoy.MediaFacer.PictureGet
-import com.example.memeexplorer.activities.MainActivity.detectText
-import com.example.memeexplorer.common.domain.usecases.UpdateMemes
+import com.example.memeexplorer.search.domain.usecases.UpdateMemes
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
